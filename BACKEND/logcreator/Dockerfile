@@ -1,13 +1,12 @@
-# Stage 1: Build the Java app using Maven + JDK 17
+# Stage 1: Build the full app
 FROM maven:3.9.9-eclipse-temurin-17 AS build
 WORKDIR /app
 COPY . .
-RUN mvn clean package -DskipTests
+RUN mvn -pl BACKEND/logcreator -am clean package -DskipTests
 
-# Stage 2: Run the JAR with OpenJDK
+# Stage 2: Run the logcreator JAR
 FROM openjdk:17-jdk-slim
 WORKDIR /app
-# Copy and rename the built JAR
-COPY --from=build /app/target/logcreator-*.jar /app/logcreator.jar
+COPY --from=build /app/BACKEND/logcreator/target/logcreator-*.jar /app/logcreator.jar
 EXPOSE 8080
 ENTRYPOINT ["java", "-jar", "logcreator.jar"]
