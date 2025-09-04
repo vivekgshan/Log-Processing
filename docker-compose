@@ -1,0 +1,74 @@
+version: '3.8'
+
+services:
+  log-generator:
+    image: vivekgshan/log-processing:log-generator
+    container_name: log-generator
+    ports:
+      - "8081:8080"
+
+  log-listener:
+    image: vivekgshan/log-processing:log-listener
+    container_name: log-listener
+    ports:
+      - "8082:8080"
+
+  log-collector:
+    image: vivekgshan/log-processing:log-collector
+    container_name: log-collector
+    ports:
+      - "8083:8080"
+
+  log-info-persistor:
+    image: vivekgshan/log-processing:log-info-persistor
+    container_name: log-info-persistor
+
+  log-warn-persistor:
+    image: vivekgshan/log-processing:log-warn-persistor
+    container_name: log-warn-persistor
+
+  log-debug-persistor:
+    image: vivekgshan/log-processing:log-debug-persistor
+    container_name: log-debug-persistor
+
+  log-error-persistor:
+    image: vivekgshan/log-processing:log-error-persistor
+    container_name: log-error-persistor
+
+  postgres:
+    image: postgres:15
+    container_name: postgres
+    environment:
+      POSTGRES_USER: loguser
+      POSTGRES_PASSWORD: logpass
+      POSTGRES_DB: logsdb
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  log-exporter-analyzer:
+    image: vivekgshan/log-processing:log-exporter-analyzer
+    container_name: log-exporter-analyzer
+    depends_on:
+      - postgres
+    environment:
+      DB_HOST: postgres
+      DB_USER: loguser
+      DB_PASSWORD: logpass
+      DB_NAME: logsdb
+    ports:
+      - "8084:8080"
+
+  ui:
+    image: vivekgshan/log-processing:ui
+    container_name: ui
+    ports:
+      - "3000:3000"
+
+  testing:
+    image: vivekgshan/log-processing:testing
+    container_name: testing
+
+volumes:
+  postgres_data:
