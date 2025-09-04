@@ -2,7 +2,6 @@ version: "3.8"
 
 services:
   backend:
-    build: ./BACKEND/logcreator
     image: vivekgshan/log-processing-backend:latest
     container_name: log-processing-backend
     ports:
@@ -10,7 +9,6 @@ services:
     restart: always
 
   frontend:
-    build: ./FRONTEND
     image: vivekgshan/log-processing-frontend:latest
     container_name: log-processing-frontend
     ports:
