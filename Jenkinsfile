@@ -10,7 +10,7 @@ pipeline {
     stages {
         stage('Checkout') {
             steps {
-                git branch: 'main',
+                git branch: 'LogGeneratorDevOps-Pipeline',
                     url: 'https://github.com/vivekgshan/Log-Processing.git'
             }
         }
