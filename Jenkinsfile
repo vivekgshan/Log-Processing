@@ -2,7 +2,7 @@ pipeline {
     agent any
 
     environment {
-        DOCKER_IMAGE = "log-processing"
+        DOCKER_IMAGE = "log-generator"
         DOCKER_TAG = "latest"
         DOCKER_REGISTRY = "vivekgshan"
     }
