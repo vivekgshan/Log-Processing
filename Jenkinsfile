@@ -102,18 +102,5 @@ pipeline {
         }
     }
 
-    post {
-        always {
-            echo "Cleaning up containers..."
-            script {
-                if (isUnix()) {
-                    sh 'docker rm -f logcreator || true'
-                    sh 'docker rm -f mysqldb || true'
-                } else {
-                    bat 'docker rm -f logcreator || exit 0'
-                    bat 'docker rm -f mysqldb || exit 0'
-                }
-            }
-        }
-    }
+    
 }
