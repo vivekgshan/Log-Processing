@@ -1,0 +1,60 @@
+{
+  "logs": [
+    {
+      "timestamp": "2025-09-03 06:56:59,140",
+      "log_level": "DEBUG",
+      "message": "Variable x initialized to 42."
+    },
+    {
+      "timestamp": "2025-09-03 06:57:09,140",
+      "log_level": "WARN",
+      "message": "Service response time is slow."
+    },
+    {
+      "timestamp": "2025-09-03 06:57:19,140",
+      "log_level": "DEBUG",
+      "message": "Variable x initialized to 42."
+    },
+    {
+      "timestamp": "2025-09-03 06:57:29,141",
+      "log_level": "ERROR",
+      "message": "Unhandled exception occurred."
+    },
+    {
+      "timestamp": "2025-09-03 06:57:39,141",
+      "log_level": "DEBUG",
+      "message": "Variable x initialized to 42."
+    },
+    {
+      "timestamp": "2025-09-03 06:57:49,141",
+      "log_level": "ERROR",
+      "message": "Unhandled exception occurred."
+    },
+    {
+      "timestamp": "2025-09-03 06:57:59,141",
+      "log_level": "WARN",
+      "message": "High memory usage detected."
+    },
+    {
+      "timestamp": "2025-09-03 06:58:09,142",
+      "log_level": "INFO",
+      "message": "User logged in."
+    },
+    {
+      "timestamp": "2025-09-03 06:58:19,142",
+      "log_level": "DEBUG",
+      "message": "Loop iteration 5 completed."
+    },
+    {
+      "timestamp": "2025-09-03 06:58:29,142",
+      "log_level": "ERROR",
+      "message": "File not found: config.yaml"
+    }
+  ],
+  "totalCounts": {
+    "ERROR": 3,
+    "WARNING": 3,
+    "INFO": 1,
+    "DEBUG": 4
+  }
+}
