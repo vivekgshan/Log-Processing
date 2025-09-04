@@ -1,0 +1,176 @@
+2025-09-03 16:30:53 | WARN | Payment declined due to insufficient funds
+2025-09-03 16:31:23 | INFO | External API call failed
+2025-09-03 16:31:53 | DEBUG | User failed authentication
+2025-09-03 16:32:23 | ERROR | Payment declined due to insufficient funds
+2025-09-03 16:32:53 | INFO | External API call failed
+2025-09-03 16:33:23 | DEBUG | User login successful
+2025-09-03 16:33:53 | DEBUG | User login successful
+2025-09-03 16:34:23 | WARN | User login successful
+2025-09-03 16:34:53 | WARN | Cache refreshed successfully
+2025-09-03 16:35:23 | ERROR | Database connection timeout
+2025-09-03 16:35:53 | DEBUG | Cache refreshed successfully
+2025-09-03 16:36:23 | DEBUG | Payment declined due to insufficient funds
+2025-09-03 16:36:53 | WARN | External API call failed
+2025-09-03 16:37:23 | INFO | Database connection timeout
+2025-09-03 16:37:53 | WARN | External API call failed
+2025-09-03 16:38:23 | WARN | File upload completed
+2025-09-03 16:38:53 | WARN | External API call failed
+2025-09-03 16:39:23 | DEBUG | Cache refreshed successfully
+2025-09-03 16:39:53 | INFO | Database connection timeout
+2025-09-03 16:40:23 | ERROR | External API call failed
+2025-09-03 16:40:53 | INFO | Database connection timeout
+2025-09-03 16:41:23 | INFO | User login successful
+2025-09-03 16:41:53 | WARN | Cache refreshed successfully
+2025-09-03 16:42:23 | DEBUG | User login successful
+2025-09-03 16:42:53 | INFO | User failed authentication
+2025-09-03 16:43:23 | INFO | Cache refreshed successfully
+2025-09-03 16:43:53 | DEBUG | File upload completed
+2025-09-03 16:44:23 | ERROR | Cache refreshed successfully
+2025-09-03 16:44:53 | DEBUG | External API call failed
+2025-09-03 16:45:23 | ERROR | External API call failed
+2025-09-03 16:45:53 | DEBUG | External API call failed
+2025-09-03 16:46:23 | WARN | Payment processed successfully
+2025-09-03 16:46:53 | DEBUG | User login successful
+2025-09-03 16:47:23 | DEBUG | Payment processed successfully
+2025-09-03 16:47:53 | INFO | Cache refreshed successfully
+2025-09-03 16:48:23 | WARN | Payment declined due to insufficient funds
+2025-09-03 16:48:53 | DEBUG | External API call failed
+2025-09-03 16:49:23 | DEBUG | Payment processed successfully
+2025-09-03 16:49:53 | ERROR | File upload completed
+2025-09-03 16:50:23 | INFO | File upload completed
+2025-09-03 16:50:53 | ERROR | User login successful
+2025-09-03 16:51:23 | INFO | File upload completed
+2025-09-03 16:51:53 | WARN | User login successful
+2025-09-03 16:52:23 | INFO | File upload completed
+2025-09-03 16:52:53 | WARN | Database connection timeout
+2025-09-03 16:53:23 | DEBUG | Database connection timeout
+2025-09-03 16:53:53 | INFO | External API call failed
+2025-09-03 16:54:23 | ERROR | Database connection timeout
+2025-09-03 16:54:53 | INFO | Cache refreshed successfully
+2025-09-03 16:55:23 | DEBUG | Cache refreshed successfully
+2025-09-03 16:55:53 | ERROR | Cache refreshed successfully
+2025-09-03 16:56:23 | INFO | User login successful
+2025-09-03 16:56:53 | INFO | Database connection timeout
+2025-09-03 16:57:23 | DEBUG | External API call failed
+2025-09-03 16:57:53 | WARN | User failed authentication
+2025-09-03 16:58:23 | DEBUG | File upload completed
+2025-09-03 16:58:53 | WARN | Database connection timeout
+2025-09-03 16:59:23 | DEBUG | Cache refreshed successfully
+2025-09-03 16:59:53 | DEBUG | User failed authentication
+2025-09-03 17:00:23 | ERROR | External API call failed
+2025-09-03 17:00:53 | DEBUG | User failed authentication
+2025-09-03 17:01:23 | DEBUG | User failed authentication
+2025-09-03 17:01:53 | ERROR | Cache refreshed successfully
+2025-09-03 17:02:23 | INFO | Cache refreshed successfully
+2025-09-03 17:02:53 | DEBUG | User login successful
+2025-09-03 17:03:23 | WARN | User failed authentication
+2025-09-03 17:03:53 | DEBUG | Database connection timeout
+2025-09-03 17:04:23 | DEBUG | File upload completed
+2025-09-03 17:04:53 | DEBUG | Database connection timeout
+2025-09-03 17:05:23 | DEBUG | Payment processed successfully
+2025-09-03 17:05:53 | INFO | Cache refreshed successfully
+2025-09-03 17:06:23 | DEBUG | Payment processed successfully
+2025-09-03 17:06:53 | ERROR | Payment declined due to insufficient funds
+2025-09-03 17:07:23 | ERROR | Payment declined due to insufficient funds
+2025-09-03 17:07:53 | DEBUG | File upload completed
+2025-09-03 17:08:23 | INFO | Payment declined due to insufficient funds
+2025-09-03 17:08:53 | DEBUG | Payment processed successfully
+2025-09-03 17:09:23 | DEBUG | File upload completed
+2025-09-03 17:09:53 | WARN | File upload completed
+2025-09-03 17:10:23 | WARN | Database connection timeout
+2025-09-03 17:10:53 | WARN | Payment declined due to insufficient funds
+2025-09-03 17:11:23 | ERROR | Payment declined due to insufficient funds
+2025-09-03 17:11:53 | INFO | Payment processed successfully
+2025-09-03 17:12:23 | WARN | Payment declined due to insufficient funds
+2025-09-03 17:12:53 | WARN | Cache refreshed successfully
+2025-09-03 17:13:23 | DEBUG | Database connection timeout
+2025-09-03 17:13:53 | ERROR | Payment processed successfully
+2025-09-03 17:14:23 | ERROR | Payment processed successfully
+2025-09-03 17:14:53 | WARN | Payment processed successfully
+2025-09-03 17:15:23 | DEBUG | Cache refreshed successfully
+2025-09-03 17:15:53 | ERROR | Payment declined due to insufficient funds
+2025-09-03 17:16:23 | INFO | Payment declined due to insufficient funds
+2025-09-03 17:16:53 | DEBUG | Cache refreshed successfully
+2025-09-03 17:17:23 | WARN | Payment processed successfully
+2025-09-03 17:17:53 | INFO | File upload completed
+2025-09-03 17:18:23 | INFO | User failed authentication
+2025-09-03 17:18:53 | DEBUG | Payment declined due to insufficient funds
+2025-09-03 17:19:23 | DEBUG | Database connection timeout
+2025-09-03 17:19:53 | INFO | Cache refreshed successfully
+2025-09-03 17:20:23 | INFO | Payment declined due to insufficient funds
+2025-09-03 17:20:53 | ERROR | Payment processed successfully
+2025-09-03 17:21:23 | INFO | Cache refreshed successfully
+2025-09-03 17:21:53 | WARN | Payment processed successfully
+2025-09-03 17:22:23 | INFO | Payment declined due to insufficient funds
+2025-09-03 17:22:53 | ERROR | User login successful
+2025-09-03 17:23:23 | DEBUG | Payment processed successfully
+2025-09-03 17:23:53 | ERROR | User failed authentication
+2025-09-03 17:24:23 | WARN | User failed authentication
+2025-09-03 17:24:53 | WARN | Payment processed successfully
+2025-09-03 17:25:23 | WARN | User failed authentication
+2025-09-03 17:25:53 | ERROR | User login successful
+2025-09-03 17:26:23 | DEBUG | Database connection timeout
+2025-09-03 17:26:53 | DEBUG | Payment processed successfully
+2025-09-03 17:27:23 | WARN | Payment processed successfully
+2025-09-03 17:27:53 | ERROR | Payment processed successfully
+2025-09-03 17:28:23 | WARN | External API call failed
+2025-09-03 17:28:53 | WARN | Database connection timeout
+2025-09-03 17:29:23 | ERROR | Cache refreshed successfully
+2025-09-03 17:29:53 | WARN | File upload completed
+2025-09-03 17:30:23 | ERROR | User failed authentication
+2025-09-03 17:30:53 | DEBUG | User login successful
+2025-09-03 17:31:23 | INFO | Database connection timeout
+2025-09-03 17:31:53 | ERROR | User failed authentication
+2025-09-03 17:32:23 | DEBUG | User failed authentication
+2025-09-03 17:32:53 | INFO | Database connection timeout
+2025-09-03 17:33:23 | INFO | User login successful
+2025-09-03 17:33:53 | WARN | User failed authentication
+2025-09-03 17:34:23 | DEBUG | File upload completed
+2025-09-03 17:34:53 | WARN | Cache refreshed successfully
+2025-09-03 17:35:23 | WARN | Database connection timeout
+2025-09-03 17:35:53 | INFO | Payment declined due to insufficient funds
+2025-09-03 17:36:23 | ERROR | User failed authentication
+2025-09-03 17:36:53 | DEBUG | User failed authentication
+2025-09-03 17:37:23 | WARN | Payment declined due to insufficient funds
+2025-09-03 17:37:53 | INFO | Payment declined due to insufficient funds
+2025-09-03 17:38:23 | ERROR | External API call failed
+2025-09-03 17:38:53 | WARN | Database connection timeout
+2025-09-03 17:39:23 | INFO | User login successful
+2025-09-03 17:39:53 | INFO | User failed authentication
+2025-09-03 17:40:23 | ERROR | Database connection timeout
+2025-09-03 17:40:53 | INFO | User failed authentication
+2025-09-03 17:41:23 | ERROR | User failed authentication
+2025-09-03 17:41:53 | DEBUG | User login successful
+2025-09-03 17:42:23 | ERROR | Cache refreshed successfully
+2025-09-03 17:42:53 | ERROR | Database connection timeout
+2025-09-03 17:43:23 | ERROR | Database connection timeout
+2025-09-03 17:43:53 | DEBUG | Payment processed successfully
+2025-09-03 17:44:23 | ERROR | Database connection timeout
+2025-09-03 17:44:53 | DEBUG | File upload completed
+2025-09-03 17:45:23 | WARN | Payment declined due to insufficient funds
+2025-09-03 17:45:53 | ERROR | Cache refreshed successfully
+2025-09-03 17:46:23 | DEBUG | Database connection timeout
+2025-09-03 17:46:53 | WARN | Payment declined due to insufficient funds
+2025-09-03 17:47:23 | INFO | Database connection timeout
+2025-09-03 17:47:53 | ERROR | Cache refreshed successfully
+2025-09-03 17:48:23 | INFO | Payment processed successfully
+2025-09-03 17:48:53 | DEBUG | User failed authentication
+2025-09-03 17:49:23 | WARN | User login successful
+2025-09-03 17:49:53 | ERROR | User failed authentication
+2025-09-03 17:50:23 | ERROR | File upload completed
+2025-09-03 17:50:53 | DEBUG | Database connection timeout
+2025-09-03 17:51:23 | INFO | File upload completed
+2025-09-03 17:51:53 | DEBUG | Payment declined due to insufficient funds
+2025-09-03 17:52:23 | ERROR | User failed authentication
+2025-09-03 17:52:53 | INFO | Cache refreshed successfully
+2025-09-03 17:53:23 | ERROR | External API call failed
+2025-09-03 17:53:53 | WARN | File upload completed
+2025-09-03 17:54:23 | INFO | Database connection timeout
+2025-09-03 17:54:53 | DEBUG | File upload completed
+2025-09-03 17:55:23 | WARN | External API call failed
+2025-09-03 17:55:53 | DEBUG | Cache refreshed successfully
+2025-09-04 13:28:53 | DEBUG | User failed authentication
+2025-09-04 13:29:23 | DEBUG | User failed authentication
+2025-09-04 13:29:53 | DEBUG | User login successful
+2025-09-04 13:30:23 | ERROR | File upload completed
+2025-09-04 13:30:53 | INFO | Payment declined due to insufficient funds
