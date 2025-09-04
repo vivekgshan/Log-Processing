@@ -26,7 +26,7 @@ jobs:
 
     - name: Build with Maven
       run: mvn clean package
-      working-directory: ./Logmonitoringapp/logListenerCollector
+      working-directory: ./Logmonitoringapp/logListenerCollector/
 
     - name: Run Unit Tests
       run: mvn test
