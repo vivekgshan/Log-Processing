@@ -2,7 +2,7 @@ name: Log Collector CI/CD
 
 on:
   push:
-    branches: [ main ]
+    branches: [ srini/040925 ]
 
 jobs:
   build-test-docker:
@@ -15,7 +15,7 @@ jobs:
     - name: Set up JDK
       uses: actions/setup-java@v3
       with:
-        distribution: 'temurin'        # ✅ Required field
+        distribution: 'temurin'     
         java-version: '17'
         java-package: 'jdk'
         check-latest: false
@@ -26,6 +26,7 @@ jobs:
 
     - name: Build with Maven
       run: mvn clean package
+      working-directory: ./Logmonitoringapp/logListenerCollector
 
     - name: Run Unit Tests
       run: mvn test
