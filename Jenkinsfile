@@ -4,14 +4,14 @@ pipeline {
         stage('Clone Code') {
             steps {
                 echo "Cloning code from GitHub dev branch..."
-                git branch: 'ramtest1', url: 'https://github.com/vivekgshan/Log-Processing.git'
+                git branch: 'ramtest1', url: 'https://github.com/vivekgbatan/Log-Processing.git'
             }
         }
         stage('Build Docker Image') {
             steps {
                 echo "Building Docker image using Dockerfile in BACKEND/logcreator..."
                 script {
-                    sh 'docker build -t logcreator:latest ./BACKEND/logcreator'
+                    bat 'docker build -t logcreator:latest ./BACKEND/logcreator'
                 }
             }
         }
@@ -19,8 +19,8 @@ pipeline {
             steps {
                 echo "Running container from built image..."
                 script {
-                    sh 'docker rm -f logcreator || true'
-                    sh 'docker run -d -p 8080:8080 --name logcreator logcreator:latest'
+                    bat 'docker rm -f logcreator || true'
+                    bat 'docker run -d -p 8080:8080 --name logcreator logcreator:latest'
                 }
             }
         }
