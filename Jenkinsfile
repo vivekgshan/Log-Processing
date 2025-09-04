@@ -5,9 +5,7 @@ pipeline {
         stage('Clone Code') {
             steps {
                 echo "Cloning code from GitHub branch ramtest1..."
-                git branch: 'ramtest1',
-                    url: 'https://github.com/vivekgshan/Log-Processing.git',
-                    
+                git branch: 'ramtest1', url: 'https://github.com/vivekgshan/Log-Processing.git'                   
             }
         }
 
