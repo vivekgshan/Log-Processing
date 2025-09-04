@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import LogLineChart from '../components/LineChart';
 import { timeSeriesData } from '../mock/logData';
+import "../index.css";
 
 const GraphScreen = () => {
   const [data, setData] = useState(timeSeriesData);
@@ -31,10 +32,8 @@ const GraphScreen = () => {
   };
 
   return (
-    <div>
-      <h4>📊 Log Monitoring Time Series</h4>
-
-      <div style={{ marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '10px' }}>
+    <div className="graph-container">
+      <div className="filters">
         <label>
           Start Date:
           <input type="date" value={startDate} onChange={e => setStartDate(e.target.value)} />
@@ -51,23 +50,14 @@ const GraphScreen = () => {
           End Time:
           <input type="time" value={endTime} onChange={e => setEndTime(e.target.value)} />
         </label>
-        <button
-          style={{
-            padding: '8px 12px',
-            backgroundColor: '#1890ff',
-            color: 'white',
-            border: 'none',
-            borderRadius: '4px',
-            cursor: 'pointer',
-            fontSize: '14px'
-          }}
-          onClick={handleApply}
-        >
+        <button className="apply-btn" onClick={handleApply}>
           Apply
         </button>
       </div>
 
-      <LogLineChart data={data} onRefresh={handleRefresh} />
+      <div className="chart-wrapper">
+        <LogLineChart data={data} onRefresh={handleRefresh} />
+      </div>
     </div>
   );
 };
