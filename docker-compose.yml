@@ -1,10 +1,18 @@
 version: "3.8"
 
 services:
-  log-processing:
-    image: vivekgshan/log-generator:latest
-    container_name: log-generator
-    build: .
+  backend:
+    build: ./BACKEND/logcreator
+    image: vivekgshan/log-processing-backend:latest
+    container_name: log-processing-backend
     ports:
       - "8081:8080"
+    restart: always
+
+  frontend:
+    build: ./FRONTEND
+    image: vivekgshan/log-processing-frontend:latest
+    container_name: log-processing-frontend
+    ports:
+      - "3001:3000"
     restart: always
