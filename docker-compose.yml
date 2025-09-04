@@ -1,0 +1,10 @@
+version: "3.8"
+
+services:
+  log-processing:
+    image: vivekgshan/log-generator:latest
+    container_name: log-generator
+    build: .
+    ports:
+      - "8080:8080"
+    restart: always
