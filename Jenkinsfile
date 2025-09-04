@@ -4,8 +4,10 @@ pipeline {
     stages {
         stage('Clone Code') {
             steps {
-                echo "Cloning code from GitHub dev branch..."
-                git branch: 'ramtest1', url: 'https://github.com/vivekgshan/Log-Processing.git'
+                echo "Cloning code from GitHub branch ramtest1..."
+                git branch: 'ramtest1',
+                    url: 'https://github.com/vivekgshan/Log-Processing.git',
+                    
             }
         }
 
@@ -27,11 +29,13 @@ pipeline {
                 echo "Running container from built image..."
                 script {
                     if (isUnix()) {
-                        sh 'docker rm -f logcreator || true'
-                        sh 'docker run -d -p 9090:8080 --name logcreator logcreator:latest'
+                        sh '''
+                        docker rm -f logcreator || true
+                        docker run -d -p 9090:9090 --name logcreator logcreator:latest
+                        '''
                     } else {
                         bat 'docker rm -f logcreator || exit 0'
-                        bat 'docker run -d -p 9090:8080 --name logcreator logcreator:latest'
+                        bat 'docker run -d -p 9090:9090 --name logcreator logcreator:latest'
                     }
                 }
             }
@@ -42,7 +46,6 @@ pipeline {
                 echo "Checking if application is up on port 9090..."
                 script {
                     if (isUnix()) {
-                        // Retry 5 times, sleep 5s between tries
                         sh '''
                         for i in {1..5}; do
                           if curl -s http://localhost:9090 > /dev/null; then
@@ -56,19 +59,20 @@ pipeline {
                         exit 1
                         '''
                     } else {
-                        // Windows PowerShell retry
-                        bat '''
-                        for /l %%x in (1, 1, 5) do (
-                          curl -s http://localhost:9090 >NUL 2>&1
-                          if not errorlevel 1 (
-                            echo ✅ App is up!
-                            exit /b 0
-                          )
-                          echo Waiting for app... (%%x/5)
-                          timeout /t 5 >NUL
-                        )
-                        echo ❌ App did not start in time
-                        exit /b 1
+                        powershell '''
+                        $maxRetries = 5
+                        for ($i=1; $i -le $maxRetries; $i++) {
+                          try {
+                            Invoke-WebRequest -UseBasicParsing http://localhost:9090 | Out-Null
+                            Write-Host "✅ App is up!"
+                            exit 0
+                          } catch {
+                            Write-Host "Waiting for app... ($i/$maxRetries)"
+                            Start-Sleep -Seconds 5
+                          }
+                        }
+                        Write-Host "❌ App did not start in time"
+                        exit 1
                         '''
                     }
                 }
