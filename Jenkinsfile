@@ -58,7 +58,7 @@ pipeline {
                         '''
                     } else {
                         powershell '''
-                        $maxRetries = 5
+                        $maxRetries = 10
                         $success = $false
                         for ($i=1; $i -le $maxRetries; $i++) {
                           try {
@@ -68,7 +68,7 @@ pipeline {
                             break
                           } catch {
                             Write-Host "Waiting for app... ($i/$maxRetries)"
-                            Start-Sleep -Seconds 5
+                            Start-Sleep -Seconds 10
                           }
                         }
                         if (-not $success) {
