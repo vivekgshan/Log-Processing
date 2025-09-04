@@ -2,26 +2,35 @@ pipeline {
     agent any
 
     environment {
-        DOCKER_IMAGE = "log-generator"
-        DOCKER_TAG = "latest"
         DOCKER_REGISTRY = "vivekgshan"
     }
 
     stages {
         stage('Checkout') {
             steps {
-                git branch: 'LogGeneratorDevOps-Pipeline',
-                    url: 'https://github.com/vivekgshan/Log-Processing.git'
+                checkout scm
             }
         }
 
-        stage('Build & Push Docker Image') {
+        stage('Build & Push Backend') {
             steps {
                 script {
-                    sh 'docker build -t $DOCKER_REGISTRY/$DOCKER_IMAGE:$DOCKER_TAG .'
+                    sh 'docker build -t $DOCKER_REGISTRY/log-processing-backend:latest ./BACKEND/logcreator'
                     withCredentials([usernamePassword(credentialsId: 'dockerhub-cred', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
                         sh 'echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin'
-                        sh 'docker push $DOCKER_REGISTRY/$DOCKER_IMAGE:$DOCKER_TAG'
+                        sh 'docker push $DOCKER_REGISTRY/log-processing-backend:latest'
+                    }
+                }
+            }
+        }
+
+        stage('Build & Push Frontend') {
+            steps {
+                script {
+                    sh 'docker build -t $DOCKER_REGISTRY/log-processing-frontend:latest ./FRONTEND'
+                    withCredentials([usernamePassword(credentialsId: 'dockerhub-cred', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
+                        sh 'echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin'
+                        sh 'docker push $DOCKER_REGISTRY/log-processing-frontend:latest'
                     }
                 }
             }
