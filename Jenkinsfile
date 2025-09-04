@@ -4,7 +4,7 @@ pipeline {
         stage('Clone Code') {
             steps {
                 echo "Cloning code from GitHub dev branch..."
-                git branch: 'ramtest1', url: 'https://github.com/vivekgbatan/Log-Processing.git'
+                git branch: 'ramtest1', url: 'https://github.com/vivekgshan/Log-Processing.git'
             }
         }
         stage('Build Docker Image') {
