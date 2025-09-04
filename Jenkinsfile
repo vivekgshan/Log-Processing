@@ -11,7 +11,7 @@ pipeline {
             steps {
                 echo "Building Docker image using Dockerfile in BACKEND/logcreator..."
                 script {
-                    bat 'docker build -t logcreator:latest ./BACKEND/logcreator'
+                    bat 'docker build -t logcreator:latest -f BACKEND/logcreator/Dockerfile .'
                 }
             }
         }
