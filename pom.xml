@@ -19,7 +19,6 @@
 
     <modules>
         <module>BACKEND/logcreator</module>
-        <module>BACKEND/logmonitoringapp</module>
     </modules>
 
     <dependencyManagement>
