@@ -7,7 +7,9 @@ COPY . .
 
 # Run Maven from repo root, build only logcreator
 WORKDIR /app
-RUN mvn -f pom.xml -pl BACKEND/logcreator -am clean package -DskipTests
+
+RUN mvn -f /app/pom.xml -pl BACKEND/logcreator clean package -DskipTests
+
 
 # Stage 2: Run the logcreator JAR with OpenJDK
 FROM openjdk:17-jdk-slim
