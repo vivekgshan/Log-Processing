@@ -5,7 +5,7 @@ pipeline {
         stage('Clone Code') {
             steps {
                 echo "Cloning code from GitHub branch ramtest1..."
-                git branch: 'ramtest1', url: 'https://github.com/vivekgshan/Log-Processing.git'                   
+                git branch: 'ramtest1', url: 'https://github.com/vivekgshan/Log-Processing.git'
             }
         }
 
@@ -22,18 +22,38 @@ pipeline {
             }
         }
 
-        stage('Run Container') {
+        stage('Start MySQL') {
             steps {
-                echo "Running container from built image..."
+                echo "Starting MySQL container..."
+                script {
+                    if (isUnix()) {
+                        sh '''
+                        docker rm -f mysqldb || true
+                        docker run -d --name mysqldb \
+                          -e MYSQL_ROOT_PASSWORD=tiger \
+                          -e MYSQL_DATABASE=logdb \
+                          -p 3306:3306 mysql:8
+                        '''
+                    } else {
+                        bat 'docker rm -f mysqldb || exit 0'
+                        bat 'docker run -d --name mysqldb -e MYSQL_ROOT_PASSWORD=tiger -e MYSQL_DATABASE=logdb -p 3306:3306 mysql:8'
+                    }
+                }
+            }
+        }
+
+        stage('Run App Container') {
+            steps {
+                echo "Running logcreator container linked with MySQL..."
                 script {
                     if (isUnix()) {
                         sh '''
                         docker rm -f logcreator || true
-                        docker run -d -p 9096:9096 --name logcreator logcreator:latest
+                        docker run -d --name logcreator --link mysqldb:mysql -p 9096:9096 logcreator:latest
                         '''
                     } else {
                         bat 'docker rm -f logcreator || exit 0'
-                        bat 'docker run -d -p 9096:9096 --name logcreator logcreator:latest'
+                        bat 'docker run -d --name logcreator --link mysqldb:mysql -p 9096:9096 logcreator:latest'
                     }
                 }
             }
@@ -45,13 +65,13 @@ pipeline {
                 script {
                     if (isUnix()) {
                         sh '''
-                        for i in {1..5}; do
+                        for i in {1..10}; do
                           if curl -s http://localhost:9096 > /dev/null; then
                             echo "✅ App is up!"
                             exit 0
                           fi
-                          echo "Waiting for app... ($i/5)"
-                          sleep 5
+                          echo "Waiting for app... ($i/10)"
+                          sleep 10
                         done
                         echo "❌ App did not start in time"
                         exit 1
@@ -77,6 +97,21 @@ pipeline {
                         }
                         '''
                     }
+                }
+            }
+        }
+    }
+
+    post {
+        always {
+            echo "Cleaning up containers..."
+            script {
+                if (isUnix()) {
+                    sh 'docker rm -f logcreator || true'
+                    sh 'docker rm -f mysqldb || true'
+                } else {
+                    bat 'docker rm -f logcreator || exit 0'
+                    bat 'docker rm -f mysqldb || exit 0'
                 }
             }
         }
