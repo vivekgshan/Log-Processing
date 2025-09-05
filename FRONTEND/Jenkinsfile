@@ -47,10 +47,10 @@ pipeline {
         stage('Deploy with Docker Compose') {
             steps {
                 script {
-                    sh '/usr/local/bin/docker-compose down'
-                    sh '/usr/local/bin/docker-compose up -d --build'
+                    sh 'docker-compose -f FRONTEND/docker-compose.yml down'
+                    sh 'docker-compose -f FRONTEND/docker-compose.yml up -d --build'
 
-                }
+                    }
             }
         }
     }
