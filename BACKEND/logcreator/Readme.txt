@@ -1,4 +1,4 @@
-This is logcreator file for Testing.
+This is logcreator file for Testing Purpouse.
 
 1) So as soon we start the logcreator application 
 it will create folder application it self. Following is the path
