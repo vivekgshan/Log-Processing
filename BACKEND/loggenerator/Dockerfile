@@ -1,24 +1,23 @@
-# Stage 1: Build stage (Maven inside container)
+# Stage 1: Build the JAR using Maven
 FROM maven:3.9.9-eclipse-temurin-17 AS build
 
 WORKDIR /app
 
-# Copy only this service code
-COPY pom.xml .
-COPY src ./src
+# Copy only loggenerator service code
+COPY Backend/loggenerator/pom.xml .
+COPY Backend/loggenerator/src ./src
 
-# Build the JAR inside the container
+# Package JAR
 RUN mvn clean package -DskipTests
 
-# Stage 2: Runtime stage
+# Stage 2: Run the JAR
 FROM eclipse-temurin:17-jdk
 
 WORKDIR /app
 
-# Copy JAR from build stage (no dependency on host file system)
-COPY --from=build /app/target/logGenerator-*.jar app.jar
+# Copy JAR from build stage
+COPY --from=build /app/target/*.jar app.jar
 
-# Expose application port (from application.properties → 8780)
 EXPOSE 8780
 
 ENTRYPOINT ["java", "-jar", "app.jar"]
