@@ -14,8 +14,10 @@ pipeline {
                 echo "Building Docker image using Dockerfile in BACKEND/logcreator..."
                 script {
                     if (isUnix()) {
+					    sh docker rm -f logcreator || true
                         sh 'docker build -t logcreator:latest -f BACKEND/logcreator/Dockerfile .'
                     } else {
+					    bat docker rm -f logcreator || exit 0
                         bat 'docker build -t logcreator:latest -f BACKEND/logcreator/Dockerfile .'
                     }
                 }
