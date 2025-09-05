@@ -1,0 +1,4 @@
+com\loglistenercollector\listener\LogFileListener.class
+com\loglistenercollector\collector\LogCollector$LogEntry.class
+com\loglistenercollector\collector\LogCollector.class
+com\loglistenercollector\LogListenerNCollectorApplication.class

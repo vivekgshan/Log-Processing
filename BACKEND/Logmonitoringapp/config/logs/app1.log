@@ -1,0 +1,7 @@
+2025-09-04 23:11:19 | INFO | Database connection timeout
+2025-09-04 23:11:19 | ERROR | Service unavailable, retrying...
+2025-09-04 23:11:19 | INFO | File upload completed
+2025-09-04 23:11:19 | DEBUG | Service unavailable, retrying...
+2025-09-04 23:11:19 | WARN | Request processed in 120ms
+2025-09-04 23:11:19 | INFO | Cache refreshed successfully
+2025-09-04 23:11:19 | DEBUG | File upload completed

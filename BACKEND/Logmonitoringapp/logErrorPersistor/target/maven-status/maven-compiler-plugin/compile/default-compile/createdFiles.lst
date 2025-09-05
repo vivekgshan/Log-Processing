@@ -1,0 +1,4 @@
+com\loginfopersistor\repository\LogRepository.class
+com\loginfopersistor\model\LogEntity.class
+com\loginfopersistor\controller\ErrorController.class
+com\loginfopersistor\LogErrorPersistorApplication.class

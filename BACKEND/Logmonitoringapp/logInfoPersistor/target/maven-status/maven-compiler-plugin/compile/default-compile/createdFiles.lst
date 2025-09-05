@@ -1,0 +1,4 @@
+com\loginfopersistor\LogInfoPersistorApplication.class
+com\loginfopersistor\repository\LogRepository.class
+com\loginfopersistor\model\LogEntity.class
+com\loginfopersistor\controller\InfoController.class
