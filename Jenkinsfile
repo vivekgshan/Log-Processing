@@ -14,10 +14,10 @@ pipeline {
                 echo "Building Docker image using Dockerfile in BACKEND/logcreator..."
                 script {
                     if (isUnix()) {
-					    sh 'docker rm -f logcreator || true'
+                        sh 'docker rm -f logcreator || true'
                         sh 'docker build -t logcreator:latest -f BACKEND/logcreator/Dockerfile .'
                     } else {
-					    bat 'docker rm -f logcreator || exit 0'
+                        bat 'docker rm -f logcreator || exit 0'
                         bat 'docker build -t logcreator:latest -f BACKEND/logcreator/Dockerfile .'
                     }
                 }
@@ -31,7 +31,10 @@ pipeline {
                     if (isUnix()) {
                         sh '''
                         docker rm -f mysqldb || true
-                        docker run -d --name mysqldb -e MYSQL_ROOT_PASSWORD=tiger -e MYSQL_DATABASE=logdb -p 3306:3306 mysql:8.0
+                        docker run -d --name mysqldb \
+                          -e MYSQL_ROOT_PASSWORD=tiger \
+                          -e MYSQL_DATABASE=logdb \
+                          -p 3306:3306 mysql:8.0
                         '''
                     } else {
                         bat 'docker rm -f mysqldb || exit 0'
@@ -56,14 +59,26 @@ pipeline {
 
         stage('Run App Container') {
             steps {
-                echo "Running app container (not removing on failure, keeping for debugging)..."
+                echo "Running app container with DB env vars..."
                 script {
                     if (isUnix()) {
                         sh '''
-                        docker run -d --name logcreator --link mysqldb:mysql -p 9096:9096 logcreator:latest
+                        docker run -d --name logcreator \
+                          --link mysqldb:mysql \
+                          -p 9096:9096 \
+                          -e SPRING_DATASOURCE_URL=jdbc:mysql://mysql:3306/logdb \
+                          -e SPRING_DATASOURCE_USERNAME=root \
+                          -e SPRING_DATASOURCE_PASSWORD=tiger \
+                          logcreator:latest
                         '''
                     } else {
-                        bat 'docker run -d --name logcreator --link mysqldb:mysql -p 9096:9096 logcreator:latest'
+                        bat '''
+                        docker run -d --name logcreator --link mysqldb:mysql -p 9096:9096 ^
+                          -e SPRING_DATASOURCE_URL=jdbc:mysql://mysql:3306/logdb ^
+                          -e SPRING_DATASOURCE_USERNAME=root ^
+                          -e SPRING_DATASOURCE_PASSWORD=tiger ^
+                          logcreator:latest
+                        '''
                     }
                 }
             }
