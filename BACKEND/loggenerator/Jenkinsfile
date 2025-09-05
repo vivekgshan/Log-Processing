@@ -2,25 +2,27 @@ pipeline {
     agent any
 
     tools {
-        maven 'Maven3'   // Jenkins global tool installation
+        maven 'Maven3'   // make sure "Maven3" is configured in Jenkins -> Global Tool Config
+        jdk 'JDK17'      // configure JDK17 in Jenkins tools as well
     }
 
     stages {
-        stage('Clone Code') {
+        stage('Checkout SCM') {
             steps {
-                echo "📥 Cloning branch ramtest3..."
                 git branch: 'ramtest3', url: 'https://github.com/vivekgshan/Log-Processing.git'
             }
         }
 
         stage('Build JAR') {
             steps {
-                echo "⚙️ Building JAR..."
-                script {
-                    if (isUnix()) {
-                        sh 'mvn -f BACKEND/loggenerator/pom.xml clean package -DskipTests'
-                    } else {
-                        bat 'mvn -f BACKEND\\loggenerator\\pom.xml clean package -DskipTests'
+                dir('Backend/loggenerator') {
+                    echo "📦 Building JAR with Maven..."
+                    script {
+                        if (isUnix()) {
+                            sh 'mvn clean package -DskipTests'
+                        } else {
+                            bat 'mvn clean package -DskipTests'
+                        }
                     }
                 }
             }
@@ -30,21 +32,13 @@ pipeline {
             steps {
                 echo "🐳 Building Docker image..."
                 script {
-                    def jarName = ''
                     if (isUnix()) {
-                        jarName = sh(
-                            script: "ls BACKEND/loggenerator/target/*.jar | head -n 1",
-                            returnStdout: true
-                        ).trim()
-                        sh "docker build -t loggenerator:latest --build-arg JAR_FILE=${jarName} -f BACKEND/loggenerator/Dockerfile ."
+                        sh 'docker rm -f loggenerator || true'
+                        sh 'docker build -t loggenerator:latest -f Backend/loggenerator/Dockerfile Backend/loggenerator'
                     } else {
-                        jarName = bat(
-                            script: 'for %i in (BACKEND\\loggenerator\\target\\*.jar) do @echo %i',
-                            returnStdout: true
-                        ).trim()
-                        bat "docker build -t loggenerator:latest --build-arg JAR_FILE=${jarName} -f BACKEND\\loggenerator\\Dockerfile ."
+                        bat 'docker rm -f loggenerator || exit 0'
+                        bat 'docker build -t loggenerator:latest -f Backend\\loggenerator\\Dockerfile Backend\\loggenerator'
                     }
-                    echo "📦 Using JAR file: ${jarName}"
                 }
             }
         }
@@ -54,10 +48,8 @@ pipeline {
                 echo "🚀 Running container..."
                 script {
                     if (isUnix()) {
-                        sh 'docker rm -f loggenerator || true'
                         sh 'docker run -d --name loggenerator -p 8783:8783 loggenerator:latest'
                     } else {
-                        bat 'docker rm -f loggenerator || exit 0'
                         bat 'docker run -d --name loggenerator -p 8783:8783 loggenerator:latest'
                     }
                 }
@@ -66,13 +58,13 @@ pipeline {
 
         stage('Health Check') {
             steps {
-                echo "🔍 Checking if app is alive on port 8783..."
+                echo "🔍 Checking if application is up..."
                 script {
                     if (isUnix()) {
                         sh '''
                         for i in {1..10}; do
                           if curl -s http://localhost:8783/logs > /dev/null; then
-                            echo "✅ App is responding at /logs!"
+                            echo "✅ App is up!"
                             exit 0
                           fi
                           echo "Waiting for app... ($i/10)"
@@ -84,20 +76,53 @@ pipeline {
                     } else {
                         powershell '''
                         $maxRetries = 10
+                        $success = $false
                         for ($i=1; $i -le $maxRetries; $i++) {
                           try {
                             Invoke-WebRequest -UseBasicParsing http://localhost:8783/logs | Out-Null
-                            Write-Host "✅ App is responding at /logs!"
-                            exit 0
+                            Write-Host "✅ App is up!"
+                            $success = $true
+                            break
                           } catch {
                             Write-Host "Waiting for app... ($i/$maxRetries)"
                             Start-Sleep -Seconds 5
                           }
                         }
-                        Write-Host "❌ App did not start in time"
-                        exit 1
+                        if (-not $success) {
+                          Write-Host "❌ App did not start in time"
+                          exit 1
+                        }
                         '''
                     }
+                }
+            }
+        }
+
+        stage('Show Logs if Failed') {
+            when {
+                expression { currentBuild.result == 'FAILURE' }
+            }
+            steps {
+                echo "📜 Showing last 100 lines of logs..."
+                script {
+                    if (isUnix()) {
+                        sh 'docker logs --tail 100 loggenerator || true'
+                    } else {
+                        bat 'docker logs --tail 100 loggenerator || exit 0'
+                    }
+                }
+            }
+        }
+    }
+
+    post {
+        always {
+            echo "⚠️ Pipeline finished. Containers still running:"
+            script {
+                if (isUnix()) {
+                    sh 'docker ps -a'
+                } else {
+                    bat 'docker ps -a'
                 }
             }
         }
