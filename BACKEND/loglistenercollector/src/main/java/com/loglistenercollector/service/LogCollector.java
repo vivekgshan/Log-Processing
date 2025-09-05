@@ -5,27 +5,31 @@ import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.util.Map;
 
+import org.springframework.beans.factory.annotation.Configurable;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
+@Component
 public class LogCollector {
 
 	private final RestTemplate restTemplate = new RestTemplate();
 
-	@Value("${log.infourl}")
+	@Value("${infourl}")
 	private String infoUrl ;
 	
-	@Value("${log.errorurl}")
+	@Value("${errorurl}")
 	private String errorUrl;
 	
-	@Value("${log.warnurl}")
+	@Value("${warnurl}")
 	private String warnUrl;
 	
-	@Value("${log.debugurl}")
+	@Value("${debugurl}")
 	private String debugUrl ;
 
 	public void collectLogs(File file, Map<String, Long> filePointerMap) throws IOException {
