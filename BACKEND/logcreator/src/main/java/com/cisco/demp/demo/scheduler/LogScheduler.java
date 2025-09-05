@@ -2,6 +2,7 @@ package com.cisco.demp.demo.scheduler;
 
 import java.util.Random;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
@@ -11,6 +12,8 @@ import com.cisco.demp.demo.dto.LogRequest;
 
 @Component
 public class LogScheduler {
+	@Value("${external.service.url}")
+	private String url;
 	private final RestTemplate restTemplate = new RestTemplate();
 	
 	private static final Random random = new Random();
@@ -31,7 +34,7 @@ public class LogScheduler {
 	@Scheduled(fixedRate = 30000)
 	public void generateLog() {
 		
-		String url= "http://localhost:9096/logs";
+		//String url= "http://localhost:9096/logs";
 		String message = logMessages[random.nextInt(logMessages.length)];
         String level = logLevels[random.nextInt(logLevels.length)];
 		LogRequest logRequest= new LogRequest();
