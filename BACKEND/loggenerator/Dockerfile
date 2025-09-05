@@ -1,23 +1,14 @@
-# Stage 1: Build the JAR
-FROM maven:3.9.9-eclipse-temurin-17 AS build
-WORKDIR /app
-
-# Copy pom and source
-COPY pom.xml .
-COPY src ./src
-
-# Package the app (skip tests for faster build)
-RUN mvn clean package -DskipTests
-
-# Stage 2: Run the JAR
+# Use lightweight JDK image
 FROM eclipse-temurin:17-jdk
+
+# Set working directory
 WORKDIR /app
 
-# Copy the built JAR from build stage
-COPY --from=build /app/target/*.jar app.jar
+# Copy the built JAR from Jenkins build stage
+COPY target/logGenerator-0.0.1-SNAPSHOT.jar app.jar
 
-# Expose service port
+# Expose the application port
 EXPOSE 8783
 
 # Run the application
-ENTRYPOINT ["java","-jar","app.jar"]
+ENTRYPOINT ["java", "-jar", "app.jar"]
