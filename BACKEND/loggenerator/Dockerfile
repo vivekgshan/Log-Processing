@@ -1,14 +1,14 @@
-# Use lightweight JDK image
+# Stage 1: Use JDK runtime only (since JAR is already built by Jenkins/Maven)
 FROM eclipse-temurin:17-jdk
 
-# Set working directory
+# Set working directory inside container
 WORKDIR /app
 
-# Copy the built JAR from Jenkins build stage
-COPY target/logGenerator-0.0.1-SNAPSHOT.jar app.jar
+# Copy the JAR built by Jenkins into the container
+COPY target/logGenerator-*.jar app.jar
 
-# Expose the application port
+# Expose app port (matches application.properties → 8783)
 EXPOSE 8783
 
-# Run the application
+# Run the JAR
 ENTRYPOINT ["java", "-jar", "app.jar"]

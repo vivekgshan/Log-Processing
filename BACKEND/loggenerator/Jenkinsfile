@@ -1,17 +1,21 @@
 pipeline {
     agent any
 
+    tools {
+        maven 'Maven3'   // Make sure Maven3 is configured in Jenkins "Global Tool Configuration"
+    }
+
     stages {
         stage('Clone Code') {
             steps {
-                echo "🔄 Cloning code from GitHub..."
-                git branch: 'ramtest1', url: 'https://github.com/vivekgshan/Log-Processing.git'
+                echo "📥 Cloning code from GitHub..."
+                git branch: 'ramtest3', url: 'https://github.com/vivekgshan/Log-Processing.git'
             }
         }
 
-        stage('Build with Maven') {
+        stage('Build JAR') {
             steps {
-                echo "📦 Running mvn clean package..."
+                echo "⚙️ Building JAR with Maven..."
                 script {
                     if (isUnix()) {
                         sh 'mvn -f Backend/loggenerator/pom.xml clean package -DskipTests'
@@ -27,9 +31,13 @@ pipeline {
                 echo "🐳 Building Docker image..."
                 script {
                     if (isUnix()) {
-                        sh 'docker build -t loggenerator:latest Backend/loggenerator'
+                        sh '''
+                        docker rm -f loggenerator || true
+                        docker build -t loggenerator:latest -f Backend/loggenerator/Dockerfile .
+                        '''
                     } else {
-                        bat 'docker build -t loggenerator:latest Backend\\loggenerator'
+                        bat 'docker rm -f loggenerator || exit 0'
+                        bat 'docker build -t loggenerator:latest -f Backend\\loggenerator\\Dockerfile .'
                     }
                 }
             }
@@ -37,15 +45,11 @@ pipeline {
 
         stage('Run Container') {
             steps {
-                echo "🚀 Running Docker container..."
+                echo "🚀 Running loggenerator container..."
                 script {
                     if (isUnix()) {
-                        sh '''
-                        docker rm -f loggenerator || true
-                        docker run -d --name loggenerator -p 8783:8783 loggenerator:latest
-                        '''
+                        sh 'docker run -d --name loggenerator -p 8783:8783 loggenerator:latest'
                     } else {
-                        bat 'docker rm -f loggenerator || exit 0'
                         bat 'docker run -d --name loggenerator -p 8783:8783 loggenerator:latest'
                     }
                 }
@@ -54,7 +58,7 @@ pipeline {
 
         stage('Health Check') {
             steps {
-                echo "💡 Checking if application is up..."
+                echo "🔍 Checking if app is up on port 8783..."
                 script {
                     if (isUnix()) {
                         sh '''
@@ -63,7 +67,7 @@ pipeline {
                             echo "✅ App is up!"
                             exit 0
                           fi
-                          echo "Waiting for app... ($i/10)"
+                          echo "⏳ Waiting for app... ($i/10)"
                           sleep 5
                         done
                         echo "❌ App did not start in time"
@@ -80,7 +84,7 @@ pipeline {
                             $success = $true
                             break
                           } catch {
-                            Write-Host "Waiting for app... ($i/$maxRetries)"
+                            Write-Host "⏳ Waiting for app... ($i/$maxRetries)"
                             Start-Sleep -Seconds 5
                           }
                         }
@@ -93,11 +97,28 @@ pipeline {
                 }
             }
         }
+
+        stage('Show Logs if Failed') {
+            when {
+                expression { currentBuild.result == 'FAILURE' }
+            }
+            steps {
+                echo "📜 Showing container logs for debugging..."
+                script {
+                    if (isUnix()) {
+                        sh 'docker logs loggenerator || true'
+                    } else {
+                        bat 'docker logs loggenerator || exit 0'
+                    }
+                }
+            }
+        }
     }
 
     post {
         always {
-            echo "⚠️ Debug Info: Run 'docker ps -a' and 'docker logs loggenerator' if app fails."
+            echo "⚠️ Containers are NOT auto-removed for debugging."
+            echo "   Run manually: docker ps -a | docker logs loggenerator"
         }
     }
 }
