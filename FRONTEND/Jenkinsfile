@@ -25,6 +25,28 @@ pipeline {
             }
         }
 
+        stage('Trivy Scan') {
+            steps {
+                sh """
+                    echo "🔍 Running Trivy vulnerability scan..."
+        
+                    # Basic scan
+                    trivy image ${DOCKER_IMAGE}:${DOCKER_TAG}
+        
+                    # Fail pipeline if CRITICAL vulnerabilities are found
+                    trivy image --exit-code 1 --severity CRITICAL ${DOCKER_IMAGE}:${DOCKER_TAG}
+        
+                    # Save detailed report
+                    trivy image --format table --output trivy-report.txt ${DOCKER_IMAGE}:${DOCKER_TAG}
+                """
+            }
+        }
+        post {
+            always {
+                archiveArtifacts artifacts: 'trivy-report.txt', fingerprint: true
+            }
+        }
+
         stage('Deploy to EC2') {
             steps {
                 script {
