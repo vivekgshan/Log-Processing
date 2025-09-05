@@ -5,7 +5,11 @@ FROM eclipse-temurin:17-jdk
 WORKDIR /app
 
 # Copy the JAR built by Maven
-COPY Backend/loggenerator/target/logGenerator-*.jar app.jar
+#COPY Backend/loggenerator/target/logGenerator-*.jar app.jar
+
+# Accept JAR file name dynamically from Jenkins
+ARG JAR_FILE
+COPY ${JAR_FILE} app.jar
 
 # Expose app port (matches application.properties → 8783)
 EXPOSE 8783

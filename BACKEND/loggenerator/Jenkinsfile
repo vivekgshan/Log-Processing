@@ -2,25 +2,25 @@ pipeline {
     agent any
 
     tools {
-        maven 'Maven3'   // Make sure Maven3 is configured in Jenkins "Global Tool Configuration"
+        maven 'Maven3'   // Jenkins global tool installation
     }
 
     stages {
         stage('Clone Code') {
             steps {
-                echo "📥 Cloning code from GitHub..."
+                echo "📥 Cloning branch ramtest3..."
                 git branch: 'ramtest3', url: 'https://github.com/vivekgshan/Log-Processing.git'
             }
         }
 
         stage('Build JAR') {
             steps {
-                echo "⚙️ Building JAR with Maven..."
+                echo "⚙️ Building JAR..."
                 script {
                     if (isUnix()) {
-                        sh 'mvn -f Backend/loggenerator/pom.xml clean package -DskipTests'
+                        sh 'mvn -f BACKEND/loggenerator/pom.xml clean package -DskipTests'
                     } else {
-                        bat 'mvn -f Backend\\loggenerator\\pom.xml clean package -DskipTests'
+                        bat 'mvn -f BACKEND\\loggenerator\\pom.xml clean package -DskipTests'
                     }
                 }
             }
@@ -30,26 +30,34 @@ pipeline {
             steps {
                 echo "🐳 Building Docker image..."
                 script {
+                    def jarName = ''
                     if (isUnix()) {
-                        sh '''
-                        docker rm -f loggenerator || true
-                        docker build -t loggenerator:latest -f Backend/loggenerator/Dockerfile .
-                        '''
+                        jarName = sh(
+                            script: "ls BACKEND/loggenerator/target/*.jar | head -n 1",
+                            returnStdout: true
+                        ).trim()
+                        sh "docker build -t loggenerator:latest --build-arg JAR_FILE=${jarName} -f BACKEND/loggenerator/Dockerfile ."
                     } else {
-                        bat 'docker rm -f loggenerator || exit 0'
-                        bat 'docker build -t loggenerator:latest -f Backend\\loggenerator\\Dockerfile .'
+                        jarName = bat(
+                            script: 'for %i in (BACKEND\\loggenerator\\target\\*.jar) do @echo %i',
+                            returnStdout: true
+                        ).trim()
+                        bat "docker build -t loggenerator:latest --build-arg JAR_FILE=${jarName} -f BACKEND\\loggenerator\\Dockerfile ."
                     }
+                    echo "📦 Using JAR file: ${jarName}"
                 }
             }
         }
 
         stage('Run Container') {
             steps {
-                echo "🚀 Running loggenerator container..."
+                echo "🚀 Running container..."
                 script {
                     if (isUnix()) {
+                        sh 'docker rm -f loggenerator || true'
                         sh 'docker run -d --name loggenerator -p 8783:8783 loggenerator:latest'
                     } else {
+                        bat 'docker rm -f loggenerator || exit 0'
                         bat 'docker run -d --name loggenerator -p 8783:8783 loggenerator:latest'
                     }
                 }
@@ -58,16 +66,16 @@ pipeline {
 
         stage('Health Check') {
             steps {
-                echo "🔍 Checking if app is up on port 8783..."
+                echo "🔍 Checking if app is alive on port 8783..."
                 script {
                     if (isUnix()) {
                         sh '''
                         for i in {1..10}; do
                           if curl -s http://localhost:8783/logs > /dev/null; then
-                            echo "✅ App is up!"
+                            echo "✅ App is responding at /logs!"
                             exit 0
                           fi
-                          echo "⏳ Waiting for app... ($i/10)"
+                          echo "Waiting for app... ($i/10)"
                           sleep 5
                         done
                         echo "❌ App did not start in time"
@@ -76,49 +84,22 @@ pipeline {
                     } else {
                         powershell '''
                         $maxRetries = 10
-                        $success = $false
                         for ($i=1; $i -le $maxRetries; $i++) {
                           try {
                             Invoke-WebRequest -UseBasicParsing http://localhost:8783/logs | Out-Null
-                            Write-Host "✅ App is up!"
-                            $success = $true
-                            break
+                            Write-Host "✅ App is responding at /logs!"
+                            exit 0
                           } catch {
-                            Write-Host "⏳ Waiting for app... ($i/$maxRetries)"
+                            Write-Host "Waiting for app... ($i/$maxRetries)"
                             Start-Sleep -Seconds 5
                           }
                         }
-                        if (-not $success) {
-                          Write-Host "❌ App did not start in time"
-                          exit 1
-                        }
+                        Write-Host "❌ App did not start in time"
+                        exit 1
                         '''
                     }
                 }
             }
-        }
-
-        stage('Show Logs if Failed') {
-            when {
-                expression { currentBuild.result == 'FAILURE' }
-            }
-            steps {
-                echo "📜 Showing container logs for debugging..."
-                script {
-                    if (isUnix()) {
-                        sh 'docker logs loggenerator || true'
-                    } else {
-                        bat 'docker logs loggenerator || exit 0'
-                    }
-                }
-            }
-        }
-    }
-
-    post {
-        always {
-            echo "⚠️ Containers are NOT auto-removed for debugging."
-            echo "   Run manually: docker ps -a | docker logs loggenerator"
         }
     }
 }
