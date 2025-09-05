@@ -4,7 +4,6 @@ FROM openjdk:17-jdk-slim
 # Set the working directory inside the container
 WORKDIR /app
 RUN ls
-COPY . .
 COPY target/loginfopersistor-3.5.5.jar app.jar
 
 EXPOSE 8783
