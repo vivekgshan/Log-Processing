@@ -41,12 +41,7 @@ pipeline {
                 """
             }
         }
-        post {
-            always {
-                archiveArtifacts artifacts: 'trivy-report.txt', fingerprint: true
-            }
-        }
-
+       
         stage('Deploy to EC2') {
             steps {
                 script {
@@ -69,5 +64,8 @@ pipeline {
         failure {
             echo "❌ Deployment failed. Check Jenkins logs."
         }
+        always {
+            archiveArtifacts artifacts: 'trivy-report.txt', fingerprint: true
+       }
     }
 }
