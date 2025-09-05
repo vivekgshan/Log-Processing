@@ -16,11 +16,11 @@ pipeline {
                     if (isUnix()) {
                         sh '''
                         docker rm -f loggenerator || true
-                        docker build -t loggenerator:latest -f Backend/loggenerator/Dockerfile .
+                        docker build -t loggenerator:latest -f Backend/loggenerator/Dockerfile Backend/loggenerator
                         '''
                     } else {
                         bat 'docker rm -f loggenerator || exit 0'
-                        bat 'docker build -t loggenerator:latest -f Backend/loggenerator/Dockerfile .'
+                        bat 'docker build -t loggenerator:latest -f Backend/loggenerator/Dockerfile Backend/loggenerator'
                     }
                 }
             }
