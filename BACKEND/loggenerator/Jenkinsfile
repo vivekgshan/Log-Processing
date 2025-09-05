@@ -45,9 +45,9 @@ pipeline {
                 echo "🚀 Running container..."
                 script {
                     if (isUnix()) {
-                        sh 'docker run -d --name loggenerator -p 8783:8783 loggenerator:latest'
+                        sh 'docker run -d --name loggenerator -p 8780:8780 loggenerator:latest'
                     } else {
-                        bat 'docker run -d --name loggenerator -p 8783:8783 loggenerator:latest'
+                        bat 'docker run -d --name loggenerator -p 8780:8780 loggenerator:latest'
                     }
                 }
             }
@@ -60,7 +60,7 @@ pipeline {
                     if (isUnix()) {
                         sh '''
                         for i in {1..10}; do
-                          if curl -s http://localhost:8783/logs > /dev/null; then
+                          if curl -s http://localhost:8780/logs > /dev/null; then
                             echo "✅ App is up!"
                             exit 0
                           fi
@@ -76,7 +76,7 @@ pipeline {
                         $success = $false
                         for ($i=1; $i -le $maxRetries; $i++) {
                           try {
-                            Invoke-WebRequest -UseBasicParsing http://localhost:8783/logs | Out-Null
+                            Invoke-WebRequest -UseBasicParsing http://localhost:8780/logs | Out-Null
                             Write-Host "✅ App is up!"
                             $success = $true
                             break

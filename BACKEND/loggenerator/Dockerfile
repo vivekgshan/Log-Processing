@@ -18,7 +18,7 @@ WORKDIR /app
 # Copy JAR from build stage (no dependency on host file system)
 COPY --from=build /app/target/logGenerator-*.jar app.jar
 
-# Expose application port (from application.properties → 8783)
-EXPOSE 8783
+# Expose application port (from application.properties → 8780)
+EXPOSE 8780
 
 ENTRYPOINT ["java", "-jar", "app.jar"]
