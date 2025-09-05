@@ -36,12 +36,6 @@ public class LogController {
 	 @PostMapping
 	 public String createLog(@RequestBody LogRequest logRequest) {
 		 dBLogAppender.saveMessage(logRequest);
-		 /*switch (logRequest.getLevel().toUpperCase()) {
-			case "INFO"-> dBLogAppender.saveMessage(logRequest);
-			case "WARN" -> log.warn(logRequest.getMessage());
-	        case "ERROR" -> log.error(logRequest.getMessage());
-	        default -> log.debug(logRequest.getMessage());
-		 }*/
 		 return "Log saved to DB!";
 	 }
 }

@@ -8,11 +8,10 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import com.cisco.demp.demo.dto.LogRequest;
-import com.cisco.demp.demo.model.LogEntity;
-import com.cisco.demp.demo.repo.AppLogRepository;
 
 import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.core.AppenderBase;
@@ -20,12 +19,20 @@ import ch.qos.logback.core.AppenderBase;
 @Component
 public class DBLogAppender {
 
-	private static AppLogRepository staticRepository;
+	@Value("${logfoldername}")
+	private String LOG_DIR;
+	
+	@Value("${logfilename}")
+	private String LOG_FILE;
+	
+	
+	/*@Autowired
+	public AppLogRepository staticRepository;*/
 
-    @Autowired
+    /*@Autowired
     public void setRepository(AppLogRepository repo) {
-        DBLogAppender.staticRepository = repo;
-    }
+        this.staticRepository = repo;
+    }*.
 
     /*public void append(ILoggingEvent event) {
         if (staticRepository == null) return;
@@ -40,8 +47,8 @@ public class DBLogAppender {
 		}
     }*/
     
-    private static final String LOG_DIR = "log"; // folder at runtime
-    private static final String LOG_FILE = "app-logs.txt";
+    //private static final String LOG_DIR = "log"; // folder at runtime
+    //private static final String LOG_FILE = "app-logs.txt";
     private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
     public synchronized void saveMessage(LogRequest logRequest ) {
