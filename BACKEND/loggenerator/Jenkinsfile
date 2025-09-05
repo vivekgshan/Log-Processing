@@ -2,19 +2,20 @@ pipeline {
     agent any
 
     tools {
-        maven "Maven3"   // assumes you configured Maven tool in Jenkins
+        maven 'Maven3'
     }
 
     stages {
         stage('Checkout SCM') {
             steps {
+                echo "📥 Checking out code from GitHub branch ramtest3..."
                 git branch: 'ramtest3', url: 'https://github.com/vivekgshan/Log-Processing.git'
             }
         }
 
-        stage('Build JAR with Maven (Host)') {
+        stage('Build JAR') {
             steps {
-                echo "🔨 Building JAR on Jenkins host (for local debugging)..."
+                echo "🔨 Building JAR with Maven..."
                 script {
                     if (isUnix()) {
                         sh 'mvn -f Backend/loggenerator/pom.xml clean package -DskipTests'
@@ -25,16 +26,16 @@ pipeline {
             }
         }
 
-        stage('Build Docker Image (with internal Maven build)') {
+        stage('Build Docker Image') {
             steps {
                 echo "🐳 Building Docker image..."
                 script {
                     if (isUnix()) {
                         sh 'docker rm -f loggenerator || true'
-                        sh 'docker build -t loggenerator:latest -f Backend/loggenerator/Dockerfile Backend/loggenerator'
+                        sh 'docker build -t loggenerator:latest -f Backend/loggenerator/Dockerfile .'
                     } else {
                         bat 'docker rm -f loggenerator || exit 0'
-                        bat 'docker build -t loggenerator:latest -f Backend\\loggenerator\\Dockerfile Backend\\loggenerator'
+                        bat 'docker build -t loggenerator:latest -f Backend\\loggenerator\\Dockerfile .'
                     }
                 }
             }
@@ -53,15 +54,15 @@ pipeline {
             }
         }
 
-        stage('Health Check') {
+        stage('Health Check (/logs)') {
             steps {
-                echo "🔍 Checking if application is up..."
+                echo "🩺 Checking if application responds on /logs..."
                 script {
                     if (isUnix()) {
                         sh '''
                         for i in {1..10}; do
-                          if curl -s http://localhost:8780/logs > /dev/null; then
-                            echo "✅ App is up!"
+                          if curl -s -X POST -H "Content-Type: application/json" -d '{"level":"INFO","message":"healthcheck"}' http://localhost:8780/logs > /dev/null; then
+                            echo "✅ App responded to /logs"
                             exit 0
                           fi
                           echo "Waiting for app... ($i/10)"
@@ -72,12 +73,13 @@ pipeline {
                         '''
                     } else {
                         powershell '''
+                        $body = '{"level":"INFO","message":"healthcheck"}'
                         $maxRetries = 10
                         $success = $false
                         for ($i=1; $i -le $maxRetries; $i++) {
                           try {
-                            Invoke-WebRequest -UseBasicParsing http://localhost:8780/logs | Out-Null
-                            Write-Host "✅ App is up!"
+                            Invoke-RestMethod -Uri http://localhost:8780/logs -Method POST -Body $body -ContentType "application/json" | Out-Null
+                            Write-Host "✅ App responded to /logs"
                             $success = $true
                             break
                           } catch {
@@ -85,27 +87,8 @@ pipeline {
                             Start-Sleep -Seconds 5
                           }
                         }
-                        if (-not $success) {
-                          Write-Host "❌ App did not start in time"
-                          exit 1
-                        }
+                        if (-not $success) { exit 1 }
                         '''
-                    }
-                }
-            }
-        }
-
-        stage('Show Logs if Failed') {
-            when {
-                expression { currentBuild.result == 'FAILURE' }
-            }
-            steps {
-                echo "📜 Showing logs..."
-                script {
-                    if (isUnix()) {
-                        sh 'docker logs loggenerator || true'
-                    } else {
-                        bat 'docker logs loggenerator || exit 0'
                     }
                 }
             }
@@ -114,7 +97,7 @@ pipeline {
 
     post {
         always {
-            echo "⚠️ Pipeline finished. Containers still running:"
+            echo "⚠️ Cleaning up containers..."
             script {
                 if (isUnix()) {
                     sh 'docker ps -a'
