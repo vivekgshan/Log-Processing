@@ -4,8 +4,8 @@ FROM maven:3.9.9-eclipse-temurin-17 AS build
 WORKDIR /app
 
 # Copy only loggenerator service code
-COPY Backend/loggenerator/pom.xml .
-COPY Backend/loggenerator/src ./src
+COPY BACKEND/loggenerator/pom.xml .
+COPY BACKEND/loggenerator/src ./src
 
 # Package JAR
 RUN mvn clean package -DskipTests
