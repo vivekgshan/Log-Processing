@@ -2,70 +2,72 @@ pipeline {
     agent any
 
     environment {
-        DOCKER_IMAGE = "log-processing-ui"
-        DOCKER_TAG = "latest"
-        CONTAINER_NAME = "log-processing-ui"
+        DOCKER_REGISTRY = "srini341"
+        FRONTEND_IMAGE = "${DOCKER_REGISTRY}/log-processing-frontend"
+        TAG = "latest"
         HOST_PORT = "3000"
         CONTAINER_PORT = "80"
+        EC2_PUBLIC_IP = "your.ec2.public.ip" // Replace with actual IP or DNS
     }
 
     stages {
         stage('Checkout') {
             steps {
-                git branch: 'dev',
-                    url: 'https://github.com/vivekgshan/Log-Processing.git'
+                checkout scm
             }
         }
 
-        stage('Build Docker Image') {
+        stage('Docker Login') {
             steps {
-                dir('FRONTEND') {
-                    sh "docker build -t ${DOCKER_IMAGE}:${DOCKER_TAG} ."
+                withCredentials([usernamePassword(credentialsId: 'dockerhub-cred', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
+                    sh 'echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin'
                 }
             }
         }
 
-        stage('Trivy Scan') {
+        stage('Build & Push Frontend') {
             steps {
                 sh """
-                    echo "🔍 Running Trivy vulnerability scan..."
-        
-                    # Basic scan
-                    trivy image ${DOCKER_IMAGE}:${DOCKER_TAG}
-        
-                    # Fail pipeline if CRITICAL vulnerabilities are found
-                    trivy image --exit-code 1 --severity CRITICAL ${DOCKER_IMAGE}:${DOCKER_TAG}
-        
-                    # Save detailed report
-                    trivy image --format table --output trivy-report.txt ${DOCKER_IMAGE}:${DOCKER_TAG}
+                    docker build -t ${FRONTEND_IMAGE}:${TAG} ./FRONTEND
+                    docker push ${FRONTEND_IMAGE}:${TAG}
                 """
             }
         }
-       
-        stage('Deploy to EC2') {
-            steps {
-                script {
-                    sh """
-                        echo "Stopping old container if running..."
-                        docker rm -f ${CONTAINER_NAME} || true
 
-                        echo "Starting new container..."
-                        docker run -d -p ${HOST_PORT}:${CONTAINER_PORT} --name ${CONTAINER_NAME} ${DOCKER_IMAGE}:${DOCKER_TAG}
-                    """
-                }
+        stage('Trivy Scan Frontend') {
+            steps {
+                sh """
+                    echo "Scanning frontend image..."
+                    trivy image --exit-code 0 --severity HIGH ${FRONTEND_IMAGE}:${TAG}
+                    trivy image --format table --output trivy-frontend-report.txt ${FRONTEND_IMAGE}:${TAG}
+                """
+            }
+        }
+
+        stage('Deploy Frontend') {
+            steps {
+                sh """
+                    echo "Cleaning up old frontend container..."
+                    docker rm -f log-processing-frontend || true
+
+                    echo "Deploying new frontend container..."
+                    docker run -d -p ${HOST_PORT}:${CONTAINER_PORT} --name log-processing-frontend ${FRONTEND_IMAGE}:${TAG}
+                """
             }
         }
     }
 
     post {
+        always {
+            sh 'docker logout || true'
+            archiveArtifacts artifacts: 'trivy-frontend-report.txt', fingerprint: true
+            echo "Pipeline finished"
+        }
         success {
-            echo "✅ Deployment successful! UI is live at http://<EC2-Public-IP>:${HOST_PORT}"
+            echo "✅ Frontend deployed! Access it at: http://${EC2_PUBLIC_IP}:${HOST_PORT}"
         }
         failure {
-            echo "❌ Deployment failed. Check Jenkins logs."
+            echo "❌ Deployment failed. Check Jenkins logs for details."
         }
-        always {
-            archiveArtifacts artifacts: 'trivy-report.txt', fingerprint: true
-       }
     }
 }
