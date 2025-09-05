@@ -29,14 +29,24 @@ pipeline {
                     if (isUnix()) {
                         sh '''
                         docker rm -f mysqldb || true
-                        docker run -d --name mysqldb \
-                          -e MYSQL_ROOT_PASSWORD=tiger \
-                          -e MYSQL_DATABASE=logdb \
-                          -p 3306:3306 mysql:8
+                        docker run -d --name mysqldb -e MYSQL_ROOT_PASSWORD=tiger -e MYSQL_DATABASE=logdb -p 3306:3306 mysql:8.0
                         '''
                     } else {
                         bat 'docker rm -f mysqldb || exit 0'
-                        bat 'docker run -d --name mysqldb -e MYSQL_ROOT_PASSWORD=tiger -e MYSQL_DATABASE=logdb -p 3306:3306 mysql:8'
+                        bat 'docker run -d --name mysqldb -e MYSQL_ROOT_PASSWORD=tiger -e MYSQL_DATABASE=logdb -p 3306:3306 mysql:8.0'
+                    }
+                }
+            }
+        }
+
+        stage('Wait for MySQL') {
+            steps {
+                echo "⏳ Waiting 20s for MySQL to be ready..."
+                script {
+                    if (isUnix()) {
+                        sh 'sleep 20'
+                    } else {
+                        powershell 'Start-Sleep -Seconds 20'
                     }
                 }
             }
@@ -44,15 +54,13 @@ pipeline {
 
         stage('Run App Container') {
             steps {
-                echo "Running logcreator container linked with MySQL..."
+                echo "Running app container (not removing on failure, keeping for debugging)..."
                 script {
                     if (isUnix()) {
                         sh '''
-                        docker rm -f logcreator || true
                         docker run -d --name logcreator --link mysqldb:mysql -p 9096:9096 logcreator:latest
                         '''
                     } else {
-                        bat 'docker rm -f logcreator || exit 0'
                         bat 'docker run -d --name logcreator --link mysqldb:mysql -p 9096:9096 logcreator:latest'
                     }
                 }
@@ -71,7 +79,7 @@ pipeline {
                             exit 0
                           fi
                           echo "Waiting for app... ($i/10)"
-                          sleep 10
+                          sleep 5
                         done
                         echo "❌ App did not start in time"
                         exit 1
@@ -88,7 +96,7 @@ pipeline {
                             break
                           } catch {
                             Write-Host "Waiting for app... ($i/$maxRetries)"
-                            Start-Sleep -Seconds 10
+                            Start-Sleep -Seconds 5
                           }
                         }
                         if (-not $success) {
@@ -100,7 +108,40 @@ pipeline {
                 }
             }
         }
+
+        stage('Show Logs if Failed') {
+            when {
+                expression { currentBuild.result == 'FAILURE' }
+            }
+            steps {
+                echo "📜 Showing last 100 lines of container logs..."
+                script {
+                    if (isUnix()) {
+                        sh '''
+                        echo "==== logcreator logs ===="
+                        docker logs --tail 100 logcreator || true
+                        echo "==== mysqldb logs ===="
+                        docker logs --tail 100 mysqldb || true
+                        '''
+                    } else {
+                        bat '''
+                        echo ==== logcreator logs ====
+                        docker logs --tail 100 logcreator || exit 0
+                        echo ==== mysqldb logs ====
+                        docker logs --tail 100 mysqldb || exit 0
+                        '''
+                    }
+                }
+            }
+        }
     }
 
-    
+    post {
+        always {
+            echo "⚠️ Containers are NOT removed automatically. You can debug manually with:"
+            echo "   docker ps -a"
+            echo "   docker logs logcreator"
+            echo "   docker logs mysqldb"
+        }
+    }
 }
