@@ -1,0 +1,113 @@
+pipeline {
+    agent any
+
+    stages {
+        stage('Clone Code') {
+            steps {
+                echo "📥 Cloning repo (branch ramtest3)..."
+                git branch: 'ramtest3', url: 'https://github.com/vivekgshan/Log-Processing.git'
+            }
+        }
+
+        stage('Build Docker Image') {
+            steps {
+                echo "🐳 Building Docker image for loggenerator..."
+                script {
+                    if (isUnix()) {
+                        sh '''
+                        docker rm -f loggenerator || true
+                        docker build -t loggenerator:latest -f Backend/loggenerator/Dockerfile .
+                        '''
+                    } else {
+                        bat 'docker rm -f loggenerator || exit 0'
+                        bat 'docker build -t loggenerator:latest -f Backend/loggenerator/Dockerfile .'
+                    }
+                }
+            }
+        }
+
+        stage('Run App Container') {
+            steps {
+                echo "🚀 Running loggenerator container on port 8783..."
+                script {
+                    if (isUnix()) {
+                        sh '''
+                        docker run -d --name loggenerator -p 8783:8783 loggenerator:latest
+                        '''
+                    } else {
+                        bat 'docker run -d --name loggenerator -p 8783:8783 loggenerator:latest'
+                    }
+                }
+            }
+        }
+
+        stage('Health Check') {
+            steps {
+                echo "🔎 Checking if app is listening on port 8783..."
+                script {
+                    if (isUnix()) {
+                        sh '''
+                        for i in {1..10}; do
+                          if nc -z localhost 8783; then
+                            echo "✅ App is listening on port 8783!"
+                            exit 0
+                          fi
+                          echo "Waiting for app... ($i/10)"
+                          sleep 5
+                        done
+                        echo "❌ App did not start in time"
+                        exit 1
+                        '''
+                    } else {
+                        powershell '''
+                        $maxRetries = 10
+                        $success = $false
+                        for ($i=1; $i -le $maxRetries; $i++) {
+                          try {
+                            $tcp = New-Object Net.Sockets.TcpClient("localhost", 8783)
+                            if ($tcp.Connected) {
+                              Write-Host "✅ App is listening on port 8783!"
+                              $tcp.Close()
+                              $success = $true
+                              break
+                            }
+                          } catch {
+                            Write-Host "Waiting for app... ($i/$maxRetries)"
+                            Start-Sleep -Seconds 5
+                          }
+                        }
+                        if (-not $success) {
+                          Write-Host "❌ App did not start in time"
+                          exit 1
+                        }
+                        '''
+                    }
+                }
+            }
+        }
+
+        stage('Show Logs on Failure') {
+            when {
+                expression { currentBuild.result == 'FAILURE' }
+            }
+            steps {
+                echo "📜 Dumping logs for debugging..."
+                script {
+                    if (isUnix()) {
+                        sh 'docker logs --tail 100 loggenerator || true'
+                    } else {
+                        bat 'docker logs --tail 100 loggenerator || exit 0'
+                    }
+                }
+            }
+        }
+    }
+
+    post {
+        always {
+            echo "⚠️ Containers are not auto-removed. Debug with:"
+            echo "   docker ps -a"
+            echo "   docker logs loggenerator"
+        }
+    }
+}
