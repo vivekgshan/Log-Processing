@@ -2,7 +2,7 @@ pipeline {
     agent any
 
     tools {
-        maven 'Maven3'   // make sure "Maven3" is configured in Jenkins -> Global Tool Config
+        maven "Maven3"   // assumes you configured Maven tool in Jenkins
     }
 
     stages {
@@ -12,22 +12,20 @@ pipeline {
             }
         }
 
-        stage('Build JAR') {
+        stage('Build JAR with Maven (Host)') {
             steps {
-                dir('Backend/loggenerator') {
-                    echo "📦 Building JAR with Maven..."
-                    script {
-                        if (isUnix()) {
-                            sh 'mvn clean package -DskipTests'
-                        } else {
-                            bat 'mvn clean package -DskipTests'
-                        }
+                echo "🔨 Building JAR on Jenkins host (for local debugging)..."
+                script {
+                    if (isUnix()) {
+                        sh 'mvn -f Backend/loggenerator/pom.xml clean package -DskipTests'
+                    } else {
+                        bat 'mvn -f Backend\\loggenerator\\pom.xml clean package -DskipTests'
                     }
                 }
             }
         }
 
-        stage('Build Docker Image') {
+        stage('Build Docker Image (with internal Maven build)') {
             steps {
                 echo "🐳 Building Docker image..."
                 script {
@@ -102,12 +100,12 @@ pipeline {
                 expression { currentBuild.result == 'FAILURE' }
             }
             steps {
-                echo "📜 Showing last 100 lines of logs..."
+                echo "📜 Showing logs..."
                 script {
                     if (isUnix()) {
-                        sh 'docker logs --tail 100 loggenerator || true'
+                        sh 'docker logs loggenerator || true'
                     } else {
-                        bat 'docker logs --tail 100 loggenerator || exit 0'
+                        bat 'docker logs loggenerator || exit 0'
                     }
                 }
             }

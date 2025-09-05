@@ -1,18 +1,24 @@
-# Stage 1: Use JDK runtime only (since JAR is already built by Jenkins/Maven)
-FROM eclipse-temurin:17-jdk
+# Stage 1: Build stage (Maven inside container)
+FROM maven:3.9.9-eclipse-temurin-17 AS build
 
-# Set working directory inside container
 WORKDIR /app
 
-# Copy the JAR built by Maven
-COPY BACKEND/loggenerator/target/logGenerator-*.jar app.jar
+# Copy only this service code
+COPY pom.xml .
+COPY src ./src
 
-# Accept JAR file name dynamically from Jenkins
-#ARG JAR_FILE
-#COPY ${JAR_FILE} app.jar
+# Build the JAR inside the container
+RUN mvn clean package -DskipTests
 
-# Expose app port (matches application.properties → 8783)
+# Stage 2: Runtime stage
+FROM eclipse-temurin:17-jdk
+
+WORKDIR /app
+
+# Copy JAR from build stage (no dependency on host file system)
+COPY --from=build /app/target/logGenerator-*.jar app.jar
+
+# Expose application port (from application.properties → 8783)
 EXPOSE 8783
 
-# Run the JAR
 ENTRYPOINT ["java", "-jar", "app.jar"]
