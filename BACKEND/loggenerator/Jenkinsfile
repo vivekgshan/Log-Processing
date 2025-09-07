@@ -43,22 +43,12 @@ pipeline {
 
         stage('Run Container') {
             steps {
-                echo "🚀 Running container with Jenkins workspace log volume..."
+                echo "🚀 Running container..."
                 script {
                     if (isUnix()) {
-                        sh '''
-                        mkdir -p $WORKSPACE/logs
-                        docker run -d --name loggenerator -p 8780:8780 \
-                          -v $WORKSPACE/logs:/root/log \
-                          loggenerator:latest
-                        '''
+                        sh 'docker run -d --name loggenerator -p 8780:8780 loggenerator:latest'
                     } else {
-                        bat '''
-                        if not exist "%WORKSPACE%\\logs" mkdir "%WORKSPACE%\\logs"
-                        docker run -d --name loggenerator -p 8780:8780 ^
-                          -v "%WORKSPACE%\\logs:/root/log" ^
-                          loggenerator:latest
-                        '''
+                        bat 'docker run -d --name loggenerator -p 8780:8780 loggenerator:latest'
                     }
                 }
             }
@@ -107,14 +97,12 @@ pipeline {
 
     post {
         always {
-            echo "⚠️ Showing container status and logs directory..."
+            echo "⚠️ Cleaning up containers..."
             script {
                 if (isUnix()) {
                     sh 'docker ps -a'
-                    sh 'ls -l $WORKSPACE/logs || true'
                 } else {
                     bat 'docker ps -a'
-                    bat 'dir "%WORKSPACE%\\logs"'
                 }
             }
         }
