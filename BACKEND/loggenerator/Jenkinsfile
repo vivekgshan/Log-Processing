@@ -97,7 +97,7 @@ pipeline {
 
     post {
         always {
-            echo "⚠️ Cleaning up containers..."
+            echo "⚠️ checking  up containers..."
             script {
                 if (isUnix()) {
                     sh 'docker ps -a'
@@ -105,7 +105,6 @@ pipeline {
                     bat 'docker ps -a'
                 }
             }
-			archiveArtifacts artifacts: 'log/*.txt', followSymlinks: false
         }
     }
 }
