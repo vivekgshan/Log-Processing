@@ -43,12 +43,22 @@ pipeline {
 
         stage('Run Container') {
             steps {
-                echo "🚀 Running container..."
+                echo "🚀 Running container with log volume mount..."
                 script {
                     if (isUnix()) {
-                        sh 'docker run -d --name loggenerator -p 8780:8780 loggenerator:latest'
+                        sh '''
+                        mkdir -p $HOME/log
+                        docker run -d --name loggenerator -p 8780:8780 \
+                          -v $HOME/log:/root/log \
+                          loggenerator:latest
+                        '''
                     } else {
-                        bat 'docker run -d --name loggenerator -p 8780:8780 loggenerator:latest'
+                        bat '''
+                        if not exist "%USERPROFILE%\\log" mkdir "%USERPROFILE%\\log"
+                        docker run -d --name loggenerator -p 8780:8780 ^
+                          -v %USERPROFILE%\\log:/root/log ^
+                          loggenerator:latest
+                        '''
                     }
                 }
             }
@@ -97,12 +107,14 @@ pipeline {
 
     post {
         always {
-            echo "⚠️ Cleaning up containers..."
+            echo "⚠️ checking up containers..."
             script {
                 if (isUnix()) {
                     sh 'docker ps -a'
+                    sh 'ls -l $HOME/log || true'
                 } else {
                     bat 'docker ps -a'
+                    bat 'dir "%USERPROFILE%\\log"'
                 }
             }
         }
