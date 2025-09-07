@@ -17,8 +17,8 @@ public class LogFileListener {
 	@Value("${logfoldername}")
 	private String LOG_DIR;
 	
-	@Value("${logfilename}")
-	private String LOG_FILE;
+	/*@Value("${logfilename}")
+	private String LOG_FILE;*/
 	String userHome = System.getProperty("user.home");
 
 	private final File logDir = new File(userHome+"/log");
@@ -34,7 +34,7 @@ public class LogFileListener {
 			return;
 		}
 
-		File[] files = logDir.listFiles((dir, name) -> name.endsWith(".txt"));
+		File[] files = logDir.listFiles((dir, name) -> name.endsWith(".log"));
 		if (files == null) return;
 
 		for (File file : files) {
