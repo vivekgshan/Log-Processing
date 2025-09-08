@@ -1,0 +1,110 @@
+pipeline {
+    agent any
+
+    tools {
+        maven 'Maven3'
+    }
+
+    stages {
+        stage('Checkout SCM') {
+            steps {
+                echo "📥 Checking out code from GitHub branch ramtestdev..."
+                git branch: 'ramtestdev', url: 'https://github.com/vivekgshan/Log-Processing.git'
+            }
+        }
+
+        stage('Build JAR') {
+            steps {
+                echo "🔨 Building JAR with Maven..."
+                script {
+                    if (isUnix()) {
+                        sh 'mvn -f Backend/loggenerator/pom.xml clean package -DskipTests'
+                    } else {
+                        bat 'mvn -f Backend\\loggenerator\\pom.xml clean package -DskipTests'
+                    }
+                }
+            }
+        }
+
+        stage('Build Docker Image') {
+            steps {
+                echo "🐳 Building Docker image..."
+                script {
+                    if (isUnix()) {
+                        sh 'docker rm -f loggenerator || true'
+                        sh 'docker build -t loggenerator:latest -f Backend/loggenerator/Dockerfile .'
+                    } else {
+                        bat 'docker rm -f loggenerator || exit 0'
+                        bat 'docker build -t loggenerator:latest -f Backend\\loggenerator\\Dockerfile .'
+                    }
+                }
+            }
+        }
+
+        stage('Run Container') {
+            steps {
+                echo "🚀 Running container..."
+                script {
+                    if (isUnix()) {
+                        sh 'docker run -d --name loggenerator -p 8780:8780 loggenerator:latest'
+                    } else {
+                        bat 'docker run -d --name loggenerator -p 8780:8780 loggenerator:latest'
+                    }
+                }
+            }
+        }
+
+        stage('Health Check (/logs)') {
+            steps {
+                echo "🩺 Checking if application responds on /logs..."
+                script {
+                    if (isUnix()) {
+                        sh '''
+                        for i in {1..10}; do
+                          if curl -s -X POST -H "Content-Type: application/json" -d '{"level":"INFO","message":"healthcheck"}' http://localhost:8780/logs > /dev/null; then
+                            echo "✅ App responded to /logs"
+                            exit 0
+                          fi
+                          echo "Waiting for app... ($i/10)"
+                          sleep 5
+                        done
+                        echo "❌ App did not start in time"
+                        exit 1
+                        '''
+                    } else {
+                        powershell '''
+                        $body = '{"level":"INFO","message":"healthcheck"}'
+                        $maxRetries = 10
+                        $success = $false
+                        for ($i=1; $i -le $maxRetries; $i++) {
+                          try {
+                            Invoke-RestMethod -Uri http://localhost:8780/logs -Method POST -Body $body -ContentType "application/json" | Out-Null
+                            Write-Host "✅ App responded to /logs"
+                            $success = $true
+                            break
+                          } catch {
+                            Write-Host "Waiting for app... ($i/$maxRetries)"
+                            Start-Sleep -Seconds 5
+                          }
+                        }
+                        if (-not $success) { exit 1 }
+                        '''
+                    }
+                }
+            }
+        }
+    }
+
+    post {
+        always {
+            echo "⚠️ checking  up containers..."
+            script {
+                if (isUnix()) {
+                    sh 'docker ps -a'
+                } else {
+                    bat 'docker ps -a'
+                }
+            }
+        }
+    }
+}
