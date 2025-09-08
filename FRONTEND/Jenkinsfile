@@ -2,75 +2,95 @@ pipeline {
     agent any
 
     environment {
-        DOCKER_REGISTRY = "mudam5"      // DockerHub username
-        IMAGE_NAME = "log-processing-ui"
-        HOST_PORT = "3000"
-        CONTAINER_PORT = "80"
-        CONTAINER_NAME = "log-processing-ui"
+        DOCKER_REGISTRY = "srini314" // Replace with your DockerHub username
+        FRONTEND_IMAGE = "${DOCKER_REGISTRY}/log-processing-frontend"
+        BACKEND_IMAGE  = "${DOCKER_REGISTRY}/log-processing-backend"
+        TAG = "latest"
+        FRONTEND_PORT = "3001"
+        BACKEND_PORT  = "8081"
+        EC2_PUBLIC_IP = "your.ec2.public.ip" // Replace with your actual EC2 IP
     }
 
     stages {
         stage('Checkout') {
             steps {
-                git branch: 'dev',
-                    url: 'https://github.com/vivekgshan/Log-Processing.git'
+                checkout scm
             }
         }
 
-        stage('Build Docker Image') {
+        stage('Docker Login') {
             steps {
-                script {
-                    // Get Git commit short hash for tagging
-                    COMMIT_ID = sh(script: "git rev-parse --short HEAD", returnStdout: true).trim()
-                    DOCKER_TAG = "${COMMIT_ID}"
-
-                    dir('FRONTEND') {
-                        sh """
-                            echo "Building Docker image..."
-                            docker build -t ${DOCKER_REGISTRY}/${IMAGE_NAME}:${DOCKER_TAG} \
-                                         -t ${DOCKER_REGISTRY}/${IMAGE_NAME}:latest .
-                        """
-                    }
+                withCredentials([usernamePassword(credentialsId: 'dockerhub-cred', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
+                    sh 'echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin'
                 }
             }
         }
 
-        stage('Push Docker Image') {
+        stage('Build Frontend') {
             steps {
-                script {
-                    withCredentials([usernamePassword(credentialsId: 'docker', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
-                        sh 'echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin'
-                        sh "docker push ${DOCKER_REGISTRY}/${IMAGE_NAME}:${DOCKER_TAG}"
-                        sh "docker push ${DOCKER_REGISTRY}/${IMAGE_NAME}:latest"
-                    }
-                }
-            }
-        }
-
-        stage('Deploy to EC2') {
-            steps {
-                script {
+                dir('FRONTEND') {
                     sh """
-                        echo "Stopping old container if running..."
-                        docker rm -f ${CONTAINER_NAME} || true
-
-                        echo "Pulling latest image..."
-                        docker pull ${DOCKER_REGISTRY}/${IMAGE_NAME}:latest
-
-                        echo "Starting new container..."
-                        docker run -d -p ${HOST_PORT}:${CONTAINER_PORT} --name ${CONTAINER_NAME} ${DOCKER_REGISTRY}/${IMAGE_NAME}:latest
+                        docker build -t ${FRONTEND_IMAGE}:${TAG} .
+                        docker push ${FRONTEND_IMAGE}:${TAG}
                     """
                 }
+            }
+        }
+
+        stage('Build Backend') {
+            steps {
+                dir('BACKEND/logvampersistor') {
+                    sh """
+                        mvn clean package -DskipTests
+                        docker build -t ${BACKEND_IMAGE}:${TAG} .
+                        docker push ${BACKEND_IMAGE}:${TAG}
+                    """
+                }
+            }
+        }
+
+        stage('Trivy Scan') {
+            steps {
+                sh """
+                    trivy image --exit-code 0 --severity HIGH ${FRONTEND_IMAGE}:${TAG}
+                    trivy image --exit-code 0 --severity HIGH ${BACKEND_IMAGE}:${TAG}
+                """
+            }
+        }
+
+        stage('Deploy Containers') {
+            steps {
+                sh """
+                    docker rm -f log-processing-frontend || true
+                    docker rm -f log-processing-backend || true
+
+                    docker run -d -p ${FRONTEND_PORT}:3000 --name log-processing-frontend ${FRONTEND_IMAGE}:${TAG}
+                    docker run -d -p ${BACKEND_PORT}:8080 --name log-processing-backend ${BACKEND_IMAGE}:${TAG}
+                """
+            }
+        }
+
+        stage('Health Check') {
+            steps {
+                sh """
+                    curl --fail http://${EC2_PUBLIC_IP}:${FRONTEND_PORT} || echo "❌ Frontend not responding"
+                    curl --fail http://${EC2_PUBLIC_IP}:${BACKEND_PORT}/actuator/health || echo "❌ Backend not responding"
+                """
             }
         }
     }
 
     post {
+        always {
+            sh 'docker logout || true'
+            echo "📦 Pipeline finished"
+        }
         success {
-            echo "✅ Deployment successful! UI is live at http://<EC2-Public-IP>:${HOST_PORT}"
+            echo "✅ Frontend: http://${EC2_PUBLIC_IP}:${FRONTEND_PORT}"
+            echo "✅ Backend:  http://${EC2_PUBLIC_IP}:${BACKEND_PORT}/actuator/health"
         }
         failure {
-            echo "❌ Deployment failed. Check Jenkins logs."
+            echo "❌ Deployment failed. Check logs for details."
         }
     }
 }
