@@ -1,37 +1,64 @@
-package com.loglistenercollector.service;
+package com.loglistener.loglistener.service;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.RandomAccessFile;
-import java.util.Map;
 
-import org.springframework.beans.factory.annotation.Configurable;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
+import com.loglistener.loglistener.request.LogEntry;
+
+import java.io.File;
+import java.io.IOException;
+import java.io.RandomAccessFile;
+import java.util.HashMap;
+import java.util.Map;
+
 @Component
-public class LogCollector {
-
-	private final RestTemplate restTemplate = new RestTemplate();
-
-	@Value("${infourl}")
-	private String infoUrl ;
+public class LogFileListener {
+	@Value("${logfoldername}")
+	private String LOG_DIR;
 	
-	@Value("${errorurl}")
-	private String errorUrl;
+	@Value("${log.collectorurl}")
+	private String collectorUrl;
 	
-	@Value("${warnurl}")
-	private String warnUrl;
+	RestTemplate restTemplate= new RestTemplate();
+	String userHome = System.getProperty("user.home");
+	private final File logDir = new File(userHome+"/log");
+	private final Map<String, Long> filePointerMap = new HashMap<>();
 	
-	@Value("${debugurl}")
-	private String debugUrl ;
 
+	@Scheduled(fixedDelay = 10000) // check every 10 seconds
+	public void watchLogs() {
+		if (!logDir.exists() || !logDir.isDirectory()) {
+			System.out.println("Log directory not found: " + logDir.getAbsolutePath());
+			return;
+		}
+
+		File[] files = logDir.listFiles((dir, name) -> name.endsWith(".log"));
+		if (files == null) return;
+
+		for (File file : files) {
+			try {
+				if (!filePointerMap.containsKey(file.getName())) {
+					System.out.println("Now listening to new file: " + file.getName());
+					filePointerMap.put(file.getName(), -1L);
+				}
+
+				// delegate actual reading to collector
+				collectLogs(file, filePointerMap);
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+	}
+	
+	
 	public void collectLogs(File file, Map<String, Long> filePointerMap) throws IOException {
 		String fileName = file.getName();
 
@@ -63,7 +90,7 @@ public class LogCollector {
 					// Parse and send to respective microservice
 					LogEntry entry = parseLog(line);
 					if (entry != null) {
-						sendLogToMicroservice(entry);
+						sendLogToCollector(entry);
 					}
 				}
 
@@ -95,46 +122,20 @@ public class LogCollector {
 	}
 
 
-	// Send to correct microservice based on logType
-	private void sendLogToMicroservice(LogEntry entry) {
-		String url = null;
-
-		switch ( entry.getLogType().trim().toUpperCase()){
-
-			case "INFO":
-				url = infoUrl;
-				break;
-			case "ERROR":
-				url = errorUrl;
-				break;
-			case "WARN":
-				url = warnUrl;
-				break;
-			case "DEBUG":
-				url = debugUrl;
-				break;
+	private void sendLogToCollector(LogEntry entry) {
+		
+		try {
+			
+			ResponseEntity<String> response = restTemplate.postForEntity(collectorUrl, entry, String.class);
+			System.out.println("Log posted: " + response.getBody());
+		} catch (Exception e) {
+			System.err.println("Failed to call /logs: " + e.getMessage());
 		}
-
-		if (url != null) {
-			try {
-				HttpHeaders headers = new HttpHeaders();
-				headers.setContentType(MediaType.APPLICATION_JSON);
-
-				HttpEntity<LogEntry> request = new HttpEntity<>(entry, headers);
-
-				ResponseEntity<String> response =
-						restTemplate.postForEntity(url, request, String.class);
-
-				System.out.println("📤 Sent " + entry.getLogType() +
-						" log → " + url + " | Response: " + response.getBody());
-			} catch (Exception e) {
-				System.err.println("⚠️ Failed to send log to microservice: " + e.getMessage());
-			}
-		}
+		
 	}
 
 	// DTO for logs
-	static class LogEntry {
+	/*static class LogEntry {
 		private String timestamp;
 		private String logType;
 		private String message;
@@ -148,5 +149,6 @@ public class LogCollector {
 		public String getTimestamp() { return timestamp; }
 		public String getLogType() { return logType; }
 		public String getMessage() { return message; }
-	}
+	}*/
+
 }

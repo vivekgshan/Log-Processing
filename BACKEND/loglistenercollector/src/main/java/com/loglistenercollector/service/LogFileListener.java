@@ -1,6 +1,9 @@
 package com.loglistenercollector.service;
 
 import com.loglistenercollector.service.LogCollector;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
@@ -11,10 +14,18 @@ import java.util.Map;
 
 @Component
 public class LogFileListener {
+	@Value("${logfoldername}")
+	private String LOG_DIR;
+	
+	/*@Value("${logfilename}")
+	private String LOG_FILE;*/
+	String userHome = System.getProperty("user.home");
 
-	private final File logDir = new File("config/logs");
+	private final File logDir = new File(userHome+"/log");
 	private final Map<String, Long> filePointerMap = new HashMap<>();
-	private final LogCollector logCollector = new LogCollector();
+	
+	@Autowired
+	private LogCollector logCollector ;// = new LogCollector();
 
 	@Scheduled(fixedDelay = 10000) // check every 10 seconds
 	public void watchLogs() {

@@ -1,4 +1,5 @@
-package com.loglistenercollector.service;
+package com.logcollector.logcollector.service;
+
 
 import java.io.File;
 import java.io.IOException;
@@ -15,8 +16,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
+import com.logcollector.logcollector.request.LogEntry;
+
 @Component
-public class LogCollector {
+public class LogFileCollector {
 
 	private final RestTemplate restTemplate = new RestTemplate();
 
@@ -32,7 +35,7 @@ public class LogCollector {
 	@Value("${debugurl}")
 	private String debugUrl ;
 
-	public void collectLogs(File file, Map<String, Long> filePointerMap) throws IOException {
+/*	public void collectLogs(File file, Map<String, Long> filePointerMap) throws IOException {
 		String fileName = file.getName();
 
 		long lastPointer = filePointerMap.getOrDefault(fileName, -1L);
@@ -70,10 +73,10 @@ public class LogCollector {
 				filePointerMap.put(fileName, reader.getFilePointer());
 			}
 		}
-	}
+	}*/
 
 	// Parse log line into structured entry
-	private LogEntry parseLog(String logLine) {
+	/*private LogEntry parseLog(String logLine) {
 		try {
 			// Example format: "2025-09-03 16:36:23 | WARN | Some message"
 			String[] parts = logLine.split("\\|", 3); // split into 3 parts
@@ -92,11 +95,11 @@ public class LogCollector {
 			System.err.println("❌ Failed to parse log line: " + logLine);
 			return null;
 		}
-	}
+	}*/
 
 
 	// Send to correct microservice based on logType
-	private void sendLogToMicroservice(LogEntry entry) {
+	public void sendLogToPersitor(LogEntry entry) {
 		String url = null;
 
 		switch ( entry.getLogType().trim().toUpperCase()){
@@ -134,7 +137,7 @@ public class LogCollector {
 	}
 
 	// DTO for logs
-	static class LogEntry {
+/*	static class LogEntry {
 		private String timestamp;
 		private String logType;
 		private String message;
@@ -148,5 +151,5 @@ public class LogCollector {
 		public String getTimestamp() { return timestamp; }
 		public String getLogType() { return logType; }
 		public String getMessage() { return message; }
-	}
+	}*/
 }
