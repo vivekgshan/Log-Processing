@@ -1,0 +1,71 @@
+pipeline {
+    agent any
+
+    environment {
+        DOCKER_REGISTRY = "sumanthmurari"
+        FRONTEND_IMAGE = "${DOCKER_REGISTRY}/loginfo-frontend"
+        TAG = "latest"
+        HOST_PORT = "3000"
+        CONTAINER_PORT = "81"
+        EC2_PUBLIC_IP = "your.ec2.public.ip" // Replace with actual IP or DNS
+    }
+
+    stages {
+        stage('Checkout') {
+            steps {
+                checkout scm
+            }
+        }
+
+        stage('Docker Login') {
+            steps {
+                withCredentials([usernamePassword(credentialsId: 'dockerhub-cred', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
+                    sh 'echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin'
+                }
+            }
+        }
+
+        stage('Build & Push Frontend') {
+            steps {
+                sh """
+                    docker build -t ${FRONTEND_IMAGE}:${TAG} ./FRONTEND
+                    docker push ${FRONTEND_IMAGE}:${TAG}
+                """
+            }
+        }
+
+        stage('Trivy Scan Frontend') {
+            steps {
+                sh """
+                    echo "Scanning frontend image..."
+                    trivy image --exit-code 0 --severity HIGH ${FRONTEND_IMAGE}:${TAG}
+                    trivy image --format table --output trivy-frontend-report.txt ${FRONTEND_IMAGE}:${TAG}
+                """
+            }
+        }
+
+        stage('Deploy with Docker Compose') {
+            steps {
+                script {
+                    sh 'docker-compose -f FRONTEND/docker-compose.yml down'
+                    sh 'docker-compose -f FRONTEND/docker-compose.yml up -d --build'
+
+                    }
+            }
+        }
+    }
+
+    post {
+        always {
+            sh 'docker logout || true'
+            archiveArtifacts artifacts: 'trivy-frontend-report.txt', fingerprint: true
+            echo "Pipeline finished"
+        }
+        success {
+            echo "✅ Frontend deployed! Access it at: http://${EC2_PUBLIC_IP}:${HOST_PORT}"
+        }
+        failure {
+            echo "❌ Deployment failed. Check Jenkins logs for details."
+        }
+    }
+}
