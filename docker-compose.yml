@@ -1,172 +1,64 @@
 services:
 
-  db:
-    image: postgres:15-alpine
-    container_name: log-processing-postgres
-    environment:
-      POSTGRES_DB: logdb
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: tiger
-    ports:
-      - "5432:5432"
-    volumes:
-      - pgdata:/var/lib/postgresql/data
-    networks:
-      - lognet
-    restart: always
-
   logcreator:
-    image: 675169530083.dkr.ecr.ca-central-1.amazonaws.com/logcreator:latest
-    container_name: logcreator
     ports:
-      - "9096:8080"
+      - "9096:9096"
     environment:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/logdb
-      SPRING_DATASOURCE_USERNAME: postgres
-      SPRING_DATASOURCE_PASSWORD: tiger
-    depends_on:
-      - db
-    networks:
-      - lognet
-    restart: always
+      server.port: 9096
+    # other configs
 
   loggenerator:
-    image: 675169530083.dkr.ecr.ca-central-1.amazonaws.com/loggenerator:latest
-    container_name: loggenerator
     ports:
-      - "8780:8080"
+      - "8780:8780"
     environment:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/logdb
-      SPRING_DATASOURCE_USERNAME: postgres
-      SPRING_DATASOURCE_PASSWORD: tiger
-    depends_on:
-      - db
-    networks:
-      - lognet
-    restart: always
+      server.port: 8780
+    # other configs
 
   loglistenercollector:
-    image: 675169530083.dkr.ecr.ca-central-1.amazonaws.com/loglistenercollector:latest
-    container_name: loglistenercollector
     ports:
-      - "8785:8080"
+      - "8785:8785"
     environment:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/logdb
-      SPRING_DATASOURCE_USERNAME: postgres
-      SPRING_DATASOURCE_PASSWORD: tiger
-    depends_on:
-      - db
-    volumes:
-      - ./shared_logs:/app/logs
-    networks:
-      - lognet
-    restart: always
+      server.port: 8785
+    # other configs
 
   loginfopersistor:
-    image: 675169530083.dkr.ecr.ca-central-1.amazonaws.com/loginfopersistor:latest
-    container_name: loginfopersistor
     ports:
-      - "8783:8080"
+      - "8783:8783"
     environment:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/logdb
-      SPRING_DATASOURCE_USERNAME: postgres
-      SPRING_DATASOURCE_PASSWORD: tiger
-    depends_on:
-      - db
-    networks:
-      - lognet
-    restart: always
+      server.port: 8783
+    # other configs
 
   logwarnpersistor:
-    image: 675169530083.dkr.ecr.ca-central-1.amazonaws.com/logwarnpersistor:latest
-    container_name: logwarnpersistor
     ports:
-      - "8784:8080"
+      - "8784:8784"
     environment:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/logdb
-      SPRING_DATASOURCE_USERNAME: postgres
-      SPRING_DATASOURCE_PASSWORD: tiger
-    depends_on:
-      - db
-    networks:
-      - lognet
-    restart: always
+      server.port: 8784
+    # other configs
 
   logdebugpersistor:
-    image: 675169530083.dkr.ecr.ca-central-1.amazonaws.com/logdebugpersistor:latest
-    container_name: logdebugpersistor
     ports:
-      - "8781:8080"
+      - "8781:8781"
     environment:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/logdb
-      SPRING_DATASOURCE_USERNAME: postgres
-      SPRING_DATASOURCE_PASSWORD: tiger
-    depends_on:
-      - db
-    networks:
-      - lognet
-    restart: always
+      server.port: 8781
+    # other configs
 
   logerrorpersistor:
-    image: 675169530083.dkr.ecr.ca-central-1.amazonaws.com/logerrorpersistor:latest
-    container_name: logerrorpersistor
     ports:
-      - "8782:8080"
+      - "8782:8782"
     environment:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/logdb
-      SPRING_DATASOURCE_USERNAME: postgres
-      SPRING_DATASOURCE_PASSWORD: tiger
-    depends_on:
-      - db
-    networks:
-      - lognet
-    restart: always
+      server.port: 8782
+    # other configs
 
   loganalyser:
-    image: 675169530083.dkr.ecr.ca-central-1.amazonaws.com/loganalyser:latest
-    container_name: loganalyser
     ports:
-      - "8086:8080"
+      - "8086:8086"
     environment:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/logdb
-      SPRING_DATASOURCE_USERNAME: postgres
-      SPRING_DATASOURCE_PASSWORD: tiger
-    depends_on:
-      - db
-    networks:
-      - lognet
-    restart: always
+      server.port: 8086
+    # other configs
 
   logexport:
-    image: 675169530083.dkr.ecr.ca-central-1.amazonaws.com/logexport:latest
-    container_name: logexport
     ports:
-      - "9097:8080"
+      - "9097:9097"
     environment:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/logdb
-      SPRING_DATASOURCE_USERNAME: postgres
-      SPRING_DATASOURCE_PASSWORD: tiger
-    depends_on:
-      - db
-    networks:
-      - lognet
-    restart: always
-
-  frontend:
-    image: 675169530083.dkr.ecr.ca-central-1.amazonaws.com/log-processing-frontend:latest
-    container_name: log-processing-frontend
-    ports:
-      - "3001:80"
-    depends_on:
-      - logexport
-    networks:
-      - lognet
-    restart: always
-
-volumes:
-  pgdata:
-  shared_logs:
-
-networks:
-  lognet:
-    driver: bridge
+      server.port: 9097
+    # other configs
