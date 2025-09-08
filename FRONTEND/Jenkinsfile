@@ -6,7 +6,7 @@ pipeline {
         FRONTEND_IMAGE = "${DOCKER_REGISTRY}/log-processing-frontend"
         BACKEND_IMAGE  = "${DOCKER_REGISTRY}/log-processing-backend"
         TAG = "latest"
-        FRONTEND_PORT = "3001"
+        FRONTEND_PORT = "3002"
         BACKEND_PORT  = "8081"
         EC2_PUBLIC_IP = "your.ec2.public.ip" // Replace with your actual EC2 IP
     }
