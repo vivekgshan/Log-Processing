@@ -3,7 +3,7 @@ pipeline {
 
     environment {
         DOCKER_REGISTRY = "sumanthmurari"
-        FRONTEND_IMAGE = "${DOCKER_REGISTRY}/loginfo-frontend"
+        FRONTEND_IMAGE = "${DOCKER_REGISTRY}/loginfo-backend"
         TAG = "latest"
         HOST_PORT = "3000"
         CONTAINER_PORT = "81"
