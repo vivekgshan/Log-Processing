@@ -12,7 +12,7 @@ pipeline {
     stages {
         stage('Checkout') {
             steps {
-                git branch: 'dev',
+                git branch: 'loginfo3',
                     url: 'https://github.com/vivekgshan/Log-Processing.git'
             }
         }
