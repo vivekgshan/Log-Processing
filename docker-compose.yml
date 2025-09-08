@@ -6,9 +6,9 @@ services:
     image: postgres:15-alpine
     container_name: log-processing-postgres
     environment:
-      POSTGRES_DB: logdb
+      POSTGRES_DB: logdata
       POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: tiger
+      POSTGRES_PASSWORD: postgres
     ports:
       - "5432:5432"
     volumes:
@@ -21,11 +21,11 @@ services:
     image: ${ECR_ACCOUNT}.dkr.ecr.${AWS_REGION}.amazonaws.com/loglistenercollector:${IMAGE_TAG}
     container_name: loglistenercollector
     ports:
-      - "8785:8080"
+      - "8785:8081"
     environment:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/logdb
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/logdata
       SPRING_DATASOURCE_USERNAME: postgres
-      SPRING_DATASOURCE_PASSWORD: tiger
+      SPRING_DATASOURCE_PASSWORD: postgres
     volumes:
       - ./shared_logs:/app/logs
     depends_on:
@@ -38,11 +38,11 @@ services:
     image: ${ECR_ACCOUNT}.dkr.ecr.${AWS_REGION}.amazonaws.com/loginfopersistor:${IMAGE_TAG}
     container_name: loginfopersistor
     ports:
-      - "8783:8080"
+      - "8783:8081"
     environment:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/logdb
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/logdata
       SPRING_DATASOURCE_USERNAME: postgres
-      SPRING_DATASOURCE_PASSWORD: tiger
+      SPRING_DATASOURCE_PASSWORD: postgres
     depends_on:
       - db
     networks:
@@ -53,11 +53,11 @@ services:
     image: ${ECR_ACCOUNT}.dkr.ecr.${AWS_REGION}.amazonaws.com/logwarnpersistor:${IMAGE_TAG}
     container_name: logwarnpersistor
     ports:
-      - "8784:8080"
+      - "8784:8081"
     environment:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/logdb
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/logdata
       SPRING_DATASOURCE_USERNAME: postgres
-      SPRING_DATASOURCE_PASSWORD: tiger
+      SPRING_DATASOURCE_PASSWORD: postgres
     depends_on:
       - db
     networks:
@@ -68,11 +68,11 @@ services:
     image: ${ECR_ACCOUNT}.dkr.ecr.${AWS_REGION}.amazonaws.com/logdebugpersistor:${IMAGE_TAG}
     container_name: logdebugpersistor
     ports:
-      - "8781:8080"
+      - "8781:8081"
     environment:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/logdb
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/logdata
       SPRING_DATASOURCE_USERNAME: postgres
-      SPRING_DATASOURCE_PASSWORD: tiger
+      SPRING_DATASOURCE_PASSWORD: postgres
     depends_on:
       - db
     networks:
@@ -83,11 +83,11 @@ services:
     image: ${ECR_ACCOUNT}.dkr.ecr.${AWS_REGION}.amazonaws.com/logerrorpersistor:${IMAGE_TAG}
     container_name: logerrorpersistor
     ports:
-      - "8782:8080"
+      - "8782:8081"
     environment:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/logdb
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/logdata
       SPRING_DATASOURCE_USERNAME: postgres
-      SPRING_DATASOURCE_PASSWORD: tiger
+      SPRING_DATASOURCE_PASSWORD: postgres
     depends_on:
       - db
     networks:
