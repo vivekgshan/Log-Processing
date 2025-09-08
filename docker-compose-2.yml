@@ -1,0 +1,174 @@
+version: "3.8"
+
+services:
+
+  db:
+    image: postgres:15-alpine
+    container_name: log-processing-postgres
+    environment:
+      POSTGRES_DB: logdb
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: tiger
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    networks:
+      - lognet
+    restart: always
+
+  logcreator:
+    image: nikhilgujela/logcreator:latest
+    container_name: logcreator
+    ports:
+      - "9096:8080"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/logdb
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: tiger
+    depends_on:
+      - db
+    networks:
+      - lognet
+    restart: always
+
+  loggenerator:
+    image: nikhilgujela/loggenerator:latest
+    container_name: loggenerator
+    ports:
+      - "8780:8080"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/logdb
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: tiger
+    depends_on:
+      - db
+    networks:
+      - lognet
+    restart: always
+
+  loglistenercollector:
+    image: nikhilgujela/loglistenercollector:latest
+    container_name: loglistenercollector
+    ports:
+      - "8785:8080"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/logdb
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: tiger
+    depends_on:
+      - db
+    volumes:
+      - ./shared_logs:/app/logs  # Mount shared log folder (if needed)
+    networks:
+      - lognet
+    restart: always
+
+  loginfopersistor:
+    image: nikhilgujela/loginfopersistor:latest
+    container_name: loginfopersistor
+    ports:
+      - "8783:8080"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/logdb
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: tiger
+    depends_on:
+      - db
+    networks:
+      - lognet
+    restart: always
+
+  logwarnpersistor:
+    image: nikhilgujela/logwarnpersistor:latest
+    container_name: logwarnpersistor
+    ports:
+      - "8784:8080"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/logdb
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: tiger
+    depends_on:
+      - db
+    networks:
+      - lognet
+    restart: always
+
+  logdebugpersistor:
+    image: nikhilgujela/logdebugpersistor:latest
+    container_name: logdebugpersistor
+    ports:
+      - "8781:8080"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/logdb
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: tiger
+    depends_on:
+      - db
+    networks:
+      - lognet
+    restart: always
+
+  logerrorpersistor:
+    image: nikhilgujela/logerrorpersistor:latest
+    container_name: logerrorpersistor
+    ports:
+      - "8782:8080"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/logdb
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: tiger
+    depends_on:
+      - db
+    networks:
+      - lognet
+    restart: always
+
+  loganalyser:
+    image: nikhilgujela/loganalyser:latest
+    container_name: loganalyser
+    ports:
+      - "8086:8080"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/logdb
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: tiger
+    depends_on:
+      - db
+    networks:
+      - lognet
+    restart: always
+
+  logexport:
+    image: nikhilgujela/logexport:latest
+    container_name: logexport
+    ports:
+      - "9097:8080"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/logdb
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: tiger
+    depends_on:
+      - db
+    networks:
+      - lognet
+    restart: always
+
+  frontend:
+    image: nikhilgujela/log-processing-frontend:latest
+    container_name: log-processing-frontend
+    ports:
+      - "3001:80"
+    depends_on:
+      - logexport
+    networks:
+      - lognet
+    restart: always
+
+volumes:
+  pgdata:
+  shared_logs:  # Named volume only if you prefer Docker-managed instead of ./shared_logs folder
+
+networks:
+  lognet:
+    driver: bridge
