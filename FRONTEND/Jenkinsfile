@@ -49,16 +49,6 @@ pipeline {
             }
         }
 
-
-        #stage('Trivy Scan') {
-           # steps {
-             #   sh """
-              #      trivy image --exit-code 0 --severity HIGH ${FRONTEND_IMAGE}:${TAG}
-               #     trivy image --exit-code 0 --severity HIGH ${BACKEND_IMAGE}:${TAG}
-               # """
-            #}
-        #}
-
         stage('Deploy Containers') {
             steps {
                 sh """
