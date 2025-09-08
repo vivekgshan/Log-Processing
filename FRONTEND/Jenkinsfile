@@ -55,7 +55,7 @@ pipeline {
                     docker rm -f log-processing-frontend || true
                     docker rm -f log-processing-backend || true
 
-                    docker run -d -p ${FRONTEND_PORT}:3000 --name log-processing-frontend ${FRONTEND_IMAGE}:${TAG}
+                    docker run -d -p ${FRONTEND_PORT}:80 --name log-processing-frontend ${FRONTEND_IMAGE}:${TAG}
                     docker run -d -p ${BACKEND_PORT}:8080 --name log-processing-backend ${BACKEND_IMAGE}:${TAG}
                 """
             }
