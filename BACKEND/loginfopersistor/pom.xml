@@ -97,7 +97,7 @@
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
 				<configuration>
-					<mainClass>com.thrivepal.userservice.UserServiceApplication</mainClass>
+					<mainClass>com.loginfopersister.LogInfoPersistorApplication</mainClass>
 				</configuration>
 				<executions>
 					<execution>
