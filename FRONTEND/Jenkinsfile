@@ -2,7 +2,7 @@ pipeline {
     agent any
 
     environment {
-        DOCKER_REGISTRY = "srini314" // Replace with your DockerHub username
+        DOCKER_REGISTRY = "srini341" // Replace with your DockerHub username
         FRONTEND_IMAGE = "${DOCKER_REGISTRY}/log-processing-frontend"
         BACKEND_IMAGE  = "${DOCKER_REGISTRY}/log-processing-backend"
         TAG = "latest"
