@@ -1,0 +1,24 @@
+version: "3.8"
+
+services:
+  frontend:
+    image: srini341/log-processing-frontend:latest
+    container_name: log-processing-frontend-${BUILD_NUMBER}
+    ports:
+      - "3001:3000"
+    restart: always
+    networks:
+      - lognet
+
+  backend:
+    image: srini341/log-processing-backend:latest
+    container_name: log-processing-backend-${BUILD_NUMBER}
+    ports:
+      - "8081:8080"
+    restart: always
+    networks:
+      - lognet
+
+networks:
+  lognet:
+    driver: bridge
