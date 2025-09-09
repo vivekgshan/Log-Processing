@@ -1,8 +1,9 @@
 import axios from "axios";
 import { MOCK_LOGS, MOCK_COUNTS } from "../mock/logs"; 
-import {timeSeriesData} from "../mock/logData";
+import { timeSeriesData } from "../mock/logData";
 
-const BASE_URL = "http://3.26.28.206:9097";
+const BASE_URL =
+  process.env.NODE_ENV === "development" ? "" : "http://3.26.28.206:9097";
 
 export const fetchLogs = async () => {
   try {
@@ -14,7 +15,6 @@ export const fetchLogs = async () => {
     return MOCK_LOGS; 
   }
 };
-
 export const fetchCounts = async () => {
   try {
     const res = await axios.get(`${BASE_URL}/logs/count`);
@@ -25,10 +25,9 @@ export const fetchCounts = async () => {
     return MOCK_COUNTS; 
   }
 };
-
 export const fetchGraphData = async () => {
   try {
-    const res = await axios.get(`${BASE_URL}/logs/count`);
+    const res = await axios.get(`${BASE_URL}/logs/linegraph`);
     console.log("Graph API Response:", res.data);
     return res.data;
   } catch (err) {
