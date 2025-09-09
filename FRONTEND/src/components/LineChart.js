@@ -39,7 +39,7 @@ const LogLineChart = ({ data }) => {
       <LineChart width={800} height={400} data={data}>
         <CartesianGrid strokeDasharray="3 3" />
         <XAxis dataKey="timestamp" />
-        <YAxis />
+        <YAxis allowDecimals={false}/>
         <Tooltip />
         <Legend />
         <Line type="monotone" dataKey="ERROR" stroke="#ff4d4f" />
