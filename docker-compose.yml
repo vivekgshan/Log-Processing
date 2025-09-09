@@ -19,7 +19,7 @@ services:
 
   loglistenercollector:
     image: ${ECR_ACCOUNT}.dkr.ecr.${AWS_REGION}.amazonaws.com/loglistenercollector:${IMAGE_TAG}
-    container_name: loglistenercollector
+    container_name: logcollector
     ports:
       - "8785:8785"
     environment:
