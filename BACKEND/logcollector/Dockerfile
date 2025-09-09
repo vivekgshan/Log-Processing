@@ -4,7 +4,7 @@ FROM openjdk:17-jdk-slim
 # Set the working directory inside the container
 WORKDIR /app
 RUN ls
-COPY target/logcollector-3.5.5.jar app.jar
+COPY target/llogcollector-0.0.1-SNAPSHOT.jar app.jar
 
 EXPOSE 8785
 
