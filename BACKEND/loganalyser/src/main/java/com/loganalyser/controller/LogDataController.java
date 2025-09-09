@@ -5,10 +5,12 @@ import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import com.loganalyser.model.LogData;
+import com.loganalyser.dto.LogData;
+import com.loganalyser.model.LogEntity;
 import com.loganalyser.service.LogDataService;
 
 @RestController
@@ -43,7 +45,17 @@ import com.loganalyser.service.LogDataService;
 	
 	@GetMapping
     public List<LogData> getAllLogs() {
-        return logExportService.getAllLogs();
+		List<LogEntity> logEntityList=logExportService.findLogsOrderedByTimestampDesc();
+		List<LogData> ldList= new ArrayList<LogData>();
+		LogData ld= new LogData();
+		for(LogEntity le:logEntityList) {
+			ld.setTimestamp(le.getTimestamp());
+			ld.setLogType(le.getLogType());
+			ld.setMessage(le.getMessage());
+			ldList.add(ld);
+		}
+		
+        return ldList;
     }
 	 
 	@GetMapping("/count")
