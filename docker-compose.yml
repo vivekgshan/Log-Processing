@@ -26,7 +26,7 @@ services:
       SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/logdata
       SPRING_DATASOURCE_USERNAME: postgres
       SPRING_DATASOURCE_PASSWORD: postgres
-      SERVER_PORT: 8785
+      SERVER_PORT: 8789
     volumes:
       - ./shared_logs:/app/logs
     depends_on:
