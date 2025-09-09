@@ -23,6 +23,9 @@ services:
     ports:
       - "8789:8789"
     environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/logdata
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: postgres
       SERVER_PORT: 8789
     volumes:
       - ./shared_logs:/app/logs
@@ -30,8 +33,6 @@ services:
       - db
     networks:
       - lognet
-    extra_hosts:
-      - "localhost:db"
     restart: always
 
   loginfopersistor:
@@ -40,13 +41,14 @@ services:
     ports:
       - "8783:8783"
     environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/logdata
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: postgres
       SERVER_PORT: 8783
     depends_on:
       - db
     networks:
       - lognet
-    extra_hosts:
-      - "localhost:db"
     restart: always
 
   logwarnpersistor:
@@ -55,13 +57,14 @@ services:
     ports:
       - "8784:8784"
     environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/logdata
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: postgres
       SERVER_PORT: 8784
     depends_on:
       - db
     networks:
       - lognet
-    extra_hosts:
-      - "localhost:db"
     restart: always
 
   logdebugpersistor:
@@ -70,13 +73,14 @@ services:
     ports:
       - "8781:8781"
     environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/logdata
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: postgres
       SERVER_PORT: 8781
     depends_on:
       - db
     networks:
       - lognet
-    extra_hosts:
-      - "localhost:db"
     restart: always
 
   logerrorpersistor:
@@ -85,13 +89,14 @@ services:
     ports:
       - "8782:8782"
     environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/logdata
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: postgres
       SERVER_PORT: 8782
     depends_on:
       - db
     networks:
       - lognet
-    extra_hosts:
-      - "localhost:db"
     restart: always
 
   frontend:
