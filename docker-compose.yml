@@ -18,7 +18,7 @@ services:
     restart: always
 
   loglistenercollector:
-    image: ${ECR_ACCOUNT}.dkr.ecr.${AWS_REGION}.amazonaws.com/loglistenercollector:${IMAGE_TAG}
+    image: ${ECR_ACCOUNT}.dkr.ecr.${AWS_REGION}.amazonaws.com/logcollector:${IMAGE_TAG}
     container_name: logcollector
     ports:
       - "8785:8785"
