@@ -20,7 +20,7 @@ import com.loganalyser.service.LogDataService;
 		public LogDataController(LogDataService service) {
 			this.service = service;
 		}
-	@GetMapping("/count")
+	/*@GetMapping("/count")
 	public Long getLogCount(
 			@RequestParam(name = "start") String start,
 			@RequestParam(name = "end") String end,
@@ -36,7 +36,7 @@ import com.loganalyser.service.LogDataService;
 		} catch (Exception e) {
 			throw new IllegalArgumentException("Invalid input. Use format: yyyy-MM-dd HH:mm:ss", e);
 		}
-	}
+	}*/
 	
 	@Autowired
 	LogDataService logExportService;

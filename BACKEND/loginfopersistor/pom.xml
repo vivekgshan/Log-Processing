@@ -78,7 +78,7 @@
 		</dependency>
 	</dependencies>
 
-	<build>
+	<!--<build>
 		<plugins>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
@@ -97,7 +97,7 @@
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
 				<configuration>
-					<mainClass>com.thrivepal.userservice.UserServiceApplication</mainClass>
+					<mainClass>com.loginfopersistor.LogInfoPersistorApplication</mainClass>
 				</configuration>
 				<executions>
 					<execution>
@@ -107,6 +107,15 @@
 						</goals>
 					</execution>
 				</executions>
+			</plugin>
+		</plugins>
+	</build>-->
+	
+		<build>
+		<plugins>
+			<plugin>
+				<groupId>org.springframework.boot</groupId>
+				<artifactId>spring-boot-maven-plugin</artifactId>
 			</plugin>
 		</plugins>
 	</build>
