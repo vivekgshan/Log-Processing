@@ -108,7 +108,7 @@ services:
     ports:
       - "3001:80"
     depends_on:
-      - loglistenercollector
+      - logcollector
       - loginfopersistor
       - logwarnpersistor
       - logdebugpersistor
