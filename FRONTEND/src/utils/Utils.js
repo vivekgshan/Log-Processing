@@ -1,5 +1,6 @@
 import axios from "axios";
 import { MOCK_LOGS, MOCK_COUNTS } from "../mock/logs"; 
+import {timeSeriesData} from "../mock/logData";
 
 const BASE_URL = "http://3.26.28.206:9097";
 
@@ -32,6 +33,6 @@ export const fetchGraphData = async () => {
     return res.data;
   } catch (err) {
     console.error("Error fetching graph data, using mock:", err);
-    return MOCK_COUNTS; 
+    return timeSeriesData; 
   }
 };
