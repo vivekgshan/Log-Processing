@@ -1,0 +1,24 @@
+version: "3.9"
+
+services:
+  loggenerator2:
+    image: loggenerator:latest
+    container_name: loggenerator2
+    ports:
+      - "8780:8780"               # loggenerator exposed on host:8780
+    networks:
+      - lognet
+
+  loglistener3:
+    image: loglistener
+    container_name: loglistener2
+    ports:
+      - "8785:8785"               # loglistener exposed on host:8785
+    depends_on:
+      - loggenerator2
+    networks:
+      - lognet
+
+networks:
+  lognet:
+    driver: bridge
