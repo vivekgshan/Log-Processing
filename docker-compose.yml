@@ -21,7 +21,7 @@ services:
     image: ${ECR_ACCOUNT}.dkr.ecr.${AWS_REGION}.amazonaws.com/logcollector:${IMAGE_TAG}
     container_name: logcollector
     ports:
-      - "8785:8785"
+      - "8789:8789"
     environment:
       SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/logdata
       SPRING_DATASOURCE_USERNAME: postgres
