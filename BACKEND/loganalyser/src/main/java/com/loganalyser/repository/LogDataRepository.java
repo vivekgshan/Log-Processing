@@ -16,8 +16,9 @@ public interface LogDataRepository extends JpaRepository<LogEntity, Long> {
 	                                  @Param("logtype") String logtype);*/
 	
 	
+
 	@Query("SELECT l.logType, COUNT(l) FROM LogEntity l GROUP BY l.logType")
-	public List<Object[]> countLogsByLevel();
+	List<Object[]> countLogsByLevel();
 
 	@Query("SELECT l FROM LogEntity l")
 	public List<LogEntity> getAllLogs();

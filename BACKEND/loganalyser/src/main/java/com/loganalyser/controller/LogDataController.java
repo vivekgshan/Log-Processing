@@ -9,7 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import com.loganalyser.dto.LogData;
+import com.loganalyser.controller.dto.LogData;
 import com.loganalyser.model.LogEntity;
 import com.loganalyser.service.LogDataService;
 
@@ -45,17 +45,9 @@ import com.loganalyser.service.LogDataService;
 	
 	@GetMapping
     public List<LogData> getAllLogs() {
-		List<LogEntity> logEntityList=logExportService.findLogsOrderedByTimestampDesc();
-		List<LogData> ldList= new ArrayList<LogData>();
-		LogData ld= new LogData();
-		for(LogEntity le:logEntityList) {
-			ld.setTimestamp(le.getTimestamp());
-			ld.setLogType(le.getLogType());
-			ld.setMessage(le.getMessage());
-			ldList.add(ld);
-		}
 		
-        return ldList;
+		
+        return logExportService.findLogsOrderedByTimestampDesc();
     }
 	 
 	@GetMapping("/count")

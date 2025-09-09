@@ -2,6 +2,7 @@ package com.loganalyser.service;
 
 import org.springframework.stereotype.Service;
 
+import com.loganalyser.controller.dto.LogData;
 import com.loganalyser.model.LogEntity;
 import com.loganalyser.repository.LogDataRepository;
 
@@ -19,7 +20,7 @@ import java.sql.Timestamp;
 public class LogDataService {
 	private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
-	private final LogDataRepository repository;
+	LogDataRepository repository;
 
 	public LogDataService(LogDataRepository repository) {
 		this.repository = repository;
@@ -32,6 +33,9 @@ public class LogDataService {
 
 		// Pass LocalDateTime directly
 		return repository.countByLogtypeAndTimeBetween(start, end, logtype);
+	}
+		// return repository.countByLogtypeAndTimeBetween(start, end, logtype);
+		repository.countByLogtypeAndTimestampBetween(logtype, start, end);
 	}*/
 	
 	
@@ -80,7 +84,16 @@ public class LogDataService {
 	    return output;
 	}
 
-	public List<LogEntity> findLogsOrderedByTimestampDesc(){
-		return repository.logs();
+	public List<LogData> findLogsOrderedByTimestampDesc(){
+		List<LogEntity> logEntityList=repository.logs();
+		List<LogData> ldList= new ArrayList<LogData>();
+		LogData ld= new LogData();
+		for(LogEntity le:logEntityList) {
+			ld.setTimestamp(le.getTimestamp());
+			ld.setLogType(le.getLogType());
+			ld.setMessage(le.getMessage());
+			ldList.add(ld);
+		}
+		return ldList;
 	}
 }
