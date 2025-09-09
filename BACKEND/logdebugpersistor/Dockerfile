@@ -3,6 +3,12 @@ FROM openjdk:17-jdk-slim
 
 # Set the working directory inside the container
 WORKDIR /app
+
+# Install PostgreSQL client
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends postgresql-client && \
+    rm -rf /var/lib/apt/lists/*
+    
 RUN ls
 COPY target/logDebugPersistor-3.5.5.jar app.jar
 
