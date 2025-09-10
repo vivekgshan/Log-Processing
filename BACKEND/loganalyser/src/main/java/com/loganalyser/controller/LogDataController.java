@@ -13,11 +13,6 @@ import com.loganalyser.controller.dto.LogData;
 import com.loganalyser.model.LogEntity;
 import com.loganalyser.service.LogDataService;
 
-
-@CrossOrigin(origins = {
-    "http://3.96.210.96:3001",
-	
-})
 @RestController
 @RequestMapping("/logs")
  public class LogDataController {
