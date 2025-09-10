@@ -123,7 +123,7 @@ services:
       SPRING_DATASOURCE_USERNAME: postgres
       SPRING_DATASOURCE_PASSWORD: postgres
       SERVER_PORT: 8086
-      FRONTEND_URL: http://frontend:80
+      FRONTEND_URL: http://logfrontend:80
     depends_on:
       db:
         condition: service_healthy
