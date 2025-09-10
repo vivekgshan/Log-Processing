@@ -31,7 +31,7 @@ services:
       SPRING_DATASOURCE_PASSWORD: postgres
       SERVER_PORT: 8789
     volumes:
-      - /home/ubuntu/log/shared_logs:/app/logs
+      - /home/ubuntu/log:/app/logs
     depends_on:
       db:
         condition: service_healthy
@@ -103,6 +103,23 @@ services:
       - logprocessing_net
     restart: always
 
+  loganalyser:
+    image: ${ECR_ACCOUNT}.dkr.ecr.${AWS_REGION}.amazonaws.com/loganalyser:${IMAGE_TAG}
+    ports:
+      - "8086:8086"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/logdata
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: postgres
+      SERVER_PORT: 8086
+      FRONTEND_URL: http://frontend:80
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - logprocessing_net
+    restart: always
+
   frontend:
     image: ${ECR_ACCOUNT}.dkr.ecr.${AWS_REGION}.amazonaws.com/frontend:${IMAGE_TAG}
     ports:
@@ -113,13 +130,14 @@ services:
       - logwarnpersistor
       - logdebugpersistor
       - logerrorpersistor
+      - loganalyser
     networks:
       - logprocessing_net
     restart: always
 
 volumes:
   pgdata:
-  shared_logs:
+  log:
 
 networks:
   logprocessing_net:
