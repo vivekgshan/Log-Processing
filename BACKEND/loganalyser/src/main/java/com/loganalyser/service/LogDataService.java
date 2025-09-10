@@ -2,10 +2,12 @@ package com.loganalyser.service;
 
 import org.springframework.stereotype.Service;
 
-import com.loganalyser.model.LogData;
+import com.loganalyser.controller.dto.LogData;
+import com.loganalyser.model.LogEntity;
 import com.loganalyser.repository.LogDataRepository;
 
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -16,14 +18,15 @@ import java.sql.Timestamp;
 
 @Service
 public class LogDataService {
+	private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
-	private final LogDataRepository repository;
+	LogDataRepository repository;
 
 	public LogDataService(LogDataRepository repository) {
 		this.repository = repository;
 	}
 
-	public Long getLogCountBetween(LocalDateTime start, LocalDateTime end, String logtype) {
+	/*public Long getLogCountBetween(LocalDateTime start, LocalDateTime end, String logtype) {
 		if (start == null || end == null || logtype == null || logtype.isBlank()) {
 			throw new IllegalArgumentException("Start, end, and logtype must not be null/empty");
 		}
@@ -31,11 +34,14 @@ public class LogDataService {
 		// Pass LocalDateTime directly
 		return repository.countByLogtypeAndTimeBetween(start, end, logtype);
 	}
+		// return repository.countByLogtypeAndTimeBetween(start, end, logtype);
+		repository.countByLogtypeAndTimestampBetween(logtype, start, end);
+	}*/
 	
 	
-	public List<LogData> getAllLogs() {
+	/*public List<LogData> getAllLogs() {
         return repository.findAll();
-    }
+    }*/
 
 	public Map<String, Long> getLogCountsByLevel() {
         List<Object[]> results = repository.countLogsByLevel();
@@ -47,21 +53,22 @@ public class LogDataService {
     }
 	
 	public List<Map<String, Object>> getLogCountsPer5Minutes() {
-	    List<LogData> logs = repository.getAllLogs();
+	    List<LogEntity> logs = repository.getAllLogs();
 
 	    Map<LocalDateTime, Map<String, Long>> grouped = new TreeMap<LocalDateTime, Map<String,Long>>();
 
-	    for (LogData log : logs) {
-	        LocalDateTime ts = log.getTimestamp();
-
+	    for (LogEntity log : logs) {
+	        String timest = log.getTimestamp();
+	    	
+	    	LocalDateTime ts = LocalDateTime.parse(timest, FORMATTER);
 	        int minute = (ts.getMinute() / 5) * 5;
 	        LocalDateTime bucket = ts.withMinute(minute).withSecond(0).withNano(0);
 
 	        grouped.putIfAbsent(bucket, new HashMap<>());
 	        Map<String, Long> levelCounts = grouped.get(bucket);
 
-	        levelCounts.put(log.getLogtype(),
-	            levelCounts.getOrDefault(log.getLogtype(), 0L) + 1);
+	        levelCounts.put(log.getLogType(),
+	            levelCounts.getOrDefault(log.getLogType(), 0L) + 1);
 	    }
 
 	    List<Map<String, Object>> output = new ArrayList<>();
@@ -77,5 +84,16 @@ public class LogDataService {
 	    return output;
 	}
 
-
+	public List<LogData> findLogsOrderedByTimestampDesc(){
+		List<LogEntity> logEntityList=repository.logs();
+		List<LogData> ldList= new ArrayList<LogData>();
+		LogData ld= new LogData();
+		for(LogEntity le:logEntityList) {
+			ld.setTimestamp(le.getTimestamp());
+			ld.setLogType(le.getLogType());
+			ld.setMessage(le.getMessage());
+			ldList.add(ld);
+		}
+		return ldList;
+	}
 }

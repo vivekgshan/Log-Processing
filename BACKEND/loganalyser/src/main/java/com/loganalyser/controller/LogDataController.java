@@ -5,10 +5,12 @@ import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import com.loganalyser.model.LogData;
+import com.loganalyser.controller.dto.LogData;
+import com.loganalyser.model.LogEntity;
 import com.loganalyser.service.LogDataService;
 
 @RestController
@@ -43,7 +45,9 @@ import com.loganalyser.service.LogDataService;
 	
 	@GetMapping
     public List<LogData> getAllLogs() {
-        return logExportService.getAllLogs();
+		
+		
+        return logExportService.findLogsOrderedByTimestampDesc();
     }
 	 
 	@GetMapping("/count")

@@ -12,16 +12,14 @@ const TableScreen = ({ logs }) => {
     let result =
       filter === "ALL"
         ? logs
-        : logs.filter(
-            (log) => log.log_level.toUpperCase() === filter.toUpperCase()
-          );
+        : logs.filter((log) => log.level.toUpperCase() === filter.toUpperCase());
 
     if (search.trim() !== "") {
       const searchText = search.toLowerCase();
       result = result.filter(
         (log) =>
           log.message.toLowerCase().includes(searchText) ||
-          log.log_level.toLowerCase().includes(searchText) ||
+          log.level.toLowerCase().includes(searchText) ||
           log.timestamp.toLowerCase().includes(searchText)
       );
     }
@@ -41,7 +39,7 @@ const TableScreen = ({ logs }) => {
         <select value={filter} onChange={(e) => setFilter(e.target.value)}>
           <option value="ALL">All Logs</option>
           <option value="ERROR">Error</option>
-          <option value="WARN">Warn</option> 
+          <option value="WARN">Warn</option>
           <option value="INFO">Info</option>
           <option value="DEBUG">Debug</option>
         </select>
@@ -64,11 +62,11 @@ const TableScreen = ({ logs }) => {
         </thead>
         <tbody>
           {currentLogs.map((log, index) => (
-            <tr key={index}>
+            <tr key={log.id}>
               <td>{indexOfFirst + index + 1}</td>
               <td>{log.timestamp}</td>
-              <td className={`level ${log.log_level.toLowerCase()}`}>
-                {log.log_level}
+              <td className={`level ${log.level.toLowerCase()}`}>
+                {log.level}
               </td>
               <td>{log.message}</td>
             </tr>
