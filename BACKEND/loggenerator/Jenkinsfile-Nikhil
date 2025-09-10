@@ -1,0 +1,117 @@
+pipeline {
+    agent any
+
+    tools {
+        jdk 'jdk17'
+        maven 'maven3'
+    }
+
+    environment {
+        AWS_REGION = 'ca-central-1' // Change as needed
+        ECR_ACCOUNT = '675169530083' // Replace with your AWS Account ID
+        IMAGE_TAG = "${BUILD_NUMBER}"
+        Git_repo = 'https://github.com/Nikhilgujela/Log-Processing-test-nik.git'
+        AWS_ACCESS_KEY_ID = credentials('AWS_ACCESS_KEY_ID')
+        AWS_SECRET_ACCESS_KEY = credentials('AWS_SECRET_ACCESS_KEY')
+    }
+
+    stages {
+
+        stage('Checkout') {            
+            steps {
+                git branch: 'dev', changelog: false, poll: false, url: "${Git_repo}"
+            }
+        }
+
+        stage('Build Backend') {
+            steps {
+                script {
+                    def services = ['logcreator']
+                    services.each { svc ->
+                        dir("BACKEND/${svc}") {
+                            sh 'mvn clean package -DskipTests'
+                        }
+                    }
+                }
+            }
+        }
+        stage('Create ECR Repositories') {
+            steps {
+                script {
+                    def repos = ['logcreator', 'frontend']
+                    repos.each { repo ->
+                        sh """
+                        aws ecr describe-repositories --repository-names ${repo} --region ${AWS_REGION} || \
+                        aws ecr create-repository --repository-name ${repo} --region ${AWS_REGION}
+                        """
+                    }
+                }
+            }
+        }
+        stage('Docker Build') {
+            steps {
+                script {
+                    def services = ['logcreator']
+
+                    services.each { svc ->
+                        def image = "${ECR_ACCOUNT}.dkr.ecr.${AWS_REGION}.amazonaws.com/${svc}:${IMAGE_TAG}"
+                        sh "docker build -t ${image} BACKEND/${svc}"
+                    }
+
+                    // Frontend image
+                    def frontendImage = "${ECR_ACCOUNT}.dkr.ecr.${AWS_REGION}.amazonaws.com/frontend:${IMAGE_TAG}"
+                    sh "docker build -t ${frontendImage} FRONTEND"
+                }
+            }
+        }
+
+
+        stage('Login to ECR') {
+            steps {
+                sh """
+                    aws ecr get-login-password --region ${AWS_REGION} | \
+                    docker login --username AWS --password-stdin ${ECR_ACCOUNT}.dkr.ecr.${AWS_REGION}.amazonaws.com
+                """
+            }
+        }
+
+        stage('Push to ECR') {
+            steps {
+                script {
+                    def services = ['logcreator','frontend']
+                    services.each { svc ->
+                        def image = "${ECR_ACCOUNT}.dkr.ecr.${AWS_REGION}.amazonaws.com/${svc}:${IMAGE_TAG}"
+                        sh "docker push ${image}"
+                    }
+
+                    def frontendImage = "${ECR_ACCOUNT}.dkr.ecr.${AWS_REGION}.amazonaws.com/frontend:${IMAGE_TAG}"
+                    sh "docker push ${frontendImage}"
+                }
+            }
+        }
+
+        stage('Deploy with Docker Compose') {
+            steps {
+                script {
+                    // Update docker-compose.yml using sed or dynamically
+                    def composeTemplate = readFile('docker-compose.yml')
+
+                    def updatedCompose = composeTemplate
+                        .replaceAll(/image:.*log-processing-backend.*/, "image: ${ECR_ACCOUNT}.dkr.ecr.${AWS_REGION}.amazonaws.com/logcreator:${IMAGE_TAG}")
+                        .replaceAll(/image:.*log-processing-frontend.*/, "image: ${ECR_ACCOUNT}.dkr.ecr.${AWS_REGION}.amazonaws.com/frontend:${IMAGE_TAG}")
+
+                    writeFile file: 'docker-compose.generated.yml', text: updatedCompose
+                    sh 'docker compose version'
+                    sh 'docker compose -f docker-compose.generated.yml down'
+                    sh 'docker compose -f docker-compose.generated.yml up -d'
+                }
+            }
+        }
+    }
+
+    post {
+        always {
+            cleanWs()
+        }
+    }
+}
