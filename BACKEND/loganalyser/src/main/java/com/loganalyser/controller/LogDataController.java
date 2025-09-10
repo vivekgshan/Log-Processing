@@ -14,6 +14,7 @@ import com.loganalyser.model.LogEntity;
 import com.loganalyser.service.LogDataService;
 
 @RestController
+@CrossOrigin(origins = "*")
 @RequestMapping("/logs")
  public class LogDataController {
 
