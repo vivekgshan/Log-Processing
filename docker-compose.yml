@@ -3,6 +3,7 @@ version: "3.8"
 services:
 
   db:
+    container_name: postgresdb
     image: postgres:15-alpine
     environment:
       POSTGRES_DB: logdata
@@ -22,6 +23,7 @@ services:
       retries: 5
 
   logcollector:
+    container_name: logcollector
     image: ${ECR_ACCOUNT}.dkr.ecr.${AWS_REGION}.amazonaws.com/logcollector:${IMAGE_TAG}
     ports:
       - "8789:8789"
@@ -30,6 +32,10 @@ services:
       SPRING_DATASOURCE_USERNAME: postgres
       SPRING_DATASOURCE_PASSWORD: postgres
       SERVER_PORT: 8789
+      LOG_INFO_PERSISTOR_URL: http://loginfopersistor:8783/info
+      LOG_WARN_PERSISTOR_URL: http://logwarnpersistor:8784/warn
+      LOG_ERROR_PERSISTOR_URL: http://logerrorpersistor:8782/error
+      LOG_DEBUG_PERSISTOR_URL: http://logdebugpersistor:8781/debug
     volumes:
       - /home/ubuntu/log:/app/logs
     depends_on:
@@ -40,6 +46,7 @@ services:
     restart: always
 
   loginfopersistor:
+    container_name: loginfopersistor
     image: ${ECR_ACCOUNT}.dkr.ecr.${AWS_REGION}.amazonaws.com/loginfopersistor:${IMAGE_TAG}
     ports:
       - "8783:8783"
@@ -56,6 +63,7 @@ services:
     restart: always
 
   logwarnpersistor:
+    container_name: logwarnpersistor
     image: ${ECR_ACCOUNT}.dkr.ecr.${AWS_REGION}.amazonaws.com/logwarnpersistor:${IMAGE_TAG}
     ports:
       - "8784:8784"
@@ -72,6 +80,7 @@ services:
     restart: always
 
   logdebugpersistor:
+    container_name: logdebugpersistor
     image: ${ECR_ACCOUNT}.dkr.ecr.${AWS_REGION}.amazonaws.com/logdebugpersistor:${IMAGE_TAG}
     ports:
       - "8781:8781"
@@ -88,6 +97,7 @@ services:
     restart: always
 
   logerrorpersistor:
+    container_name: logerrorpersistor
     image: ${ECR_ACCOUNT}.dkr.ecr.${AWS_REGION}.amazonaws.com/logerrorpersistor:${IMAGE_TAG}
     ports:
       - "8782:8782"
@@ -104,6 +114,7 @@ services:
     restart: always
 
   loganalyser:
+    container_name: loganalyser
     image: ${ECR_ACCOUNT}.dkr.ecr.${AWS_REGION}.amazonaws.com/loganalyser:${IMAGE_TAG}
     ports:
       - "8086:8086"
@@ -121,6 +132,7 @@ services:
     restart: always
 
   frontend:
+    container_name: logfrontend
     image: ${ECR_ACCOUNT}.dkr.ecr.${AWS_REGION}.amazonaws.com/frontend:${IMAGE_TAG}
     ports:
       - "3001:80"
