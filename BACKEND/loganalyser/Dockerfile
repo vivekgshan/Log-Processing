@@ -10,7 +10,7 @@ RUN apt-get update && \
     rm -rf /var/lib/apt/lists/*
     
 RUN ls
-COPY target/loganalyser-3.5.5.jar app.jar
+COPY /target/*.jar app.jar
 
 EXPOSE 8086
 
