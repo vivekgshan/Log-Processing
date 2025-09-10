@@ -87,8 +87,9 @@ public class LogDataService {
 	public List<LogData> findLogsOrderedByTimestampDesc(){
 		List<LogEntity> logEntityList=repository.logs();
 		List<LogData> ldList= new ArrayList<LogData>();
-		LogData ld= new LogData();
+		
 		for(LogEntity le:logEntityList) {
+			LogData ld= new LogData();
 			ld.setTimestamp(le.getTimestamp());
 			ld.setLogType(le.getLogType());
 			ld.setMessage(le.getMessage());

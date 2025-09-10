@@ -2,7 +2,7 @@
   "name": "log-dashboard",
   "version": "1.0.0",
   "private": true,
-  "proxy":"http://3.26.28.206:9097",
+  "proxy":"http://3.111.198.91:8086",
   "dependencies": {
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.1",

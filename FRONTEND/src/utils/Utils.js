@@ -3,7 +3,7 @@ import { MOCK_LOGS, MOCK_COUNTS } from "../mock/logs";
 import { timeSeriesData } from "../mock/logData";
 
 const BASE_URL =
-  process.env.NODE_ENV === "development" ? "" : "http://3.26.28.206:9097";
+  process.env.NODE_ENV === "development" ? "" : "http://3.111.198.91:8086";
 
 export const fetchLogs = async () => {
   try {

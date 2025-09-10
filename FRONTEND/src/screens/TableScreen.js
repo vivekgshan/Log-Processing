@@ -65,8 +65,8 @@ const TableScreen = ({ logs }) => {
             <tr key={log.id}>
               <td>{indexOfFirst + index + 1}</td>
               <td>{log.timestamp}</td>
-              <td className={`level ${log.level.toLowerCase()}`}>
-                {log.level}
+              <td className={`level ${log.logType.toLowerCase()}`}>
+                {log.logType}
               </td>
               <td>{log.message}</td>
             </tr>
