@@ -12,14 +12,14 @@ const TableScreen = ({ logs }) => {
     let result =
       filter === "ALL"
         ? logs
-        : logs.filter((log) => log.level.toUpperCase() === filter.toUpperCase());
+        : logs.filter((log) => log.logType.toUpperCase() === filter.toUpperCase());
 
     if (search.trim() !== "") {
       const searchText = search.toLowerCase();
       result = result.filter(
         (log) =>
           log.message.toLowerCase().includes(searchText) ||
-          log.level.toLowerCase().includes(searchText) ||
+          log.logType.toLowerCase().includes(searchText) ||
           log.timestamp.toLowerCase().includes(searchText)
       );
     }
@@ -51,6 +51,7 @@ const TableScreen = ({ logs }) => {
           onChange={(e) => setSearch(e.target.value)}
         />
       </div>
+
       <table>
         <thead>
           <tr>
@@ -62,7 +63,7 @@ const TableScreen = ({ logs }) => {
         </thead>
         <tbody>
           {currentLogs.map((log, index) => (
-            <tr key={log.id}>
+            <tr key={log.id || index}>
               <td>{indexOfFirst + index + 1}</td>
               <td>{log.timestamp}</td>
               <td className={`level ${log.logType.toLowerCase()}`}>
