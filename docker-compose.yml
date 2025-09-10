@@ -11,7 +11,7 @@ services:
     ports:
       - "5432:5432"
     volumes:
-      - /home/ubuntu/log_volume/pgdata:/var/lib/postgresql/data
+      - /home/ubuntu/log/pgdata:/var/lib/postgresql/data
     networks:
       - logprocessing_net
     restart: always
@@ -31,7 +31,7 @@ services:
       SPRING_DATASOURCE_PASSWORD: postgres
       SERVER_PORT: 8789
     volumes:
-      - /home/ubuntu/log_volume/shared_logs:/app/logs
+      - /home/ubuntu/log/shared_logs:/app/logs
     depends_on:
       db:
         condition: service_healthy
