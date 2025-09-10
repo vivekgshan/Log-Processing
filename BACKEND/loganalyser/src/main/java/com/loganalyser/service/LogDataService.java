@@ -19,6 +19,8 @@ import java.sql.Timestamp;
 @Service
 public class LogDataService {
 	private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+	private static final DateTimeFormatter FORMATTER_WITH_T =
+            DateTimeFormatter.ISO_LOCAL_DATE_TIME; // yyyy-MM-dd'T'HH:mm:ss
 
 	LogDataRepository repository;
 
@@ -43,7 +45,8 @@ public class LogDataService {
 	    for (LogEntity log : logs) {
 	        String timest = log.getTimestamp();
 	    	
-	    	LocalDateTime ts = LocalDateTime.parse(timest, FORMATTER);
+	    	//LocalDateTime ts = LocalDateTime.parse(timest, FORMATTER);
+	    	LocalDateTime ts = parseFlexible(timest);
 	        int minute = (ts.getMinute() / 5) * 5;
 	        LocalDateTime bucket = ts.withMinute(minute).withSecond(0).withNano(0);
 
@@ -70,8 +73,9 @@ public class LogDataService {
 	public List<LogData> findLogsOrderedByTimestampDesc(){
 		List<LogEntity> logEntityList=repository.logs();
 		List<LogData> ldList= new ArrayList<LogData>();
-		LogData ld= new LogData();
+		
 		for(LogEntity le:logEntityList) {
+			LogData ld= new LogData();
 			ld.setTimestamp(le.getTimestamp());
 			ld.setLogType(le.getLogType());
 			ld.setMessage(le.getMessage());
@@ -79,4 +83,12 @@ public class LogDataService {
 		}
 		return ldList;
 	}
+	
+    public static LocalDateTime parseFlexible(String dateTime) {
+        try {
+            return LocalDateTime.parse(dateTime, FORMATTER_WITH_T);
+        } catch (Exception e) {
+            return LocalDateTime.parse(dateTime, FORMATTER);
+        }
+    }
 }
