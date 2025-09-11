@@ -1,0 +1,85 @@
+pipeline {
+    agent any
+
+    stages {
+        stage('Checkout SCM') {
+            steps {
+                echo "📥 Checking out code from GitHub..."
+                git branch: 'dev-cloud', url: 'https://github.com/vivekgshan/Log-Processing.git'
+            }
+        }
+
+        stage('Build JARs') {
+            steps {
+                echo "🔨 Building JARs for loggenerator and loglistener..."
+                script {
+                    if (isUnix()) {
+                        sh 'mvn -f BACKEND/loggenerator/pom.xml clean package -DskipTests'
+                        sh 'mvn -f BACKEND/loglistener/pom.xml clean package -DskipTests'
+                    } else {
+                        bat 'mvn -f BACKEND\\loggenerator\\pom.xml clean package -DskipTests'
+                        bat 'mvn -f BACKEND\\loglistener\\pom.xml clean package -DskipTests'
+                    }
+                }
+            }
+        }
+
+        stage('Build Docker Images') {
+            steps {
+                echo "🐳 Building Docker images..."
+                script {
+                    if (isUnix()) {
+                        sh 'docker build -t loggenerator:latest -f BACKEND/loggenerator/Dockerfile .'
+                        sh 'docker build -t loglistener:latest -f BACKEND/loglistener/Dockerfile .'
+                    } else {
+                        bat 'docker build -t loggenerator:latest -f BACKEND\\loggenerator\\Dockerfile .'
+                        bat 'docker build -t loglistener:latest -f BACKEND\\loglistener\\Dockerfile .'
+                    }
+                }
+            }
+        }
+
+        stage('Deploy with Docker Compose') {
+            steps {
+                echo "🚀 Deploying with docker-compose..."
+                script {
+                    if (isUnix()) {
+                        sh '''
+                        cd Deployment-genlis
+                        # stop and remove old containers first
+                        docker-compose down || true
+                        docker rm -f loggenerator loglistener || true
+                        docker-compose up -d --build
+                        '''
+                    } else {
+                        bat '''
+                        cd Deployment-genlis
+                        docker-compose down || exit 0
+                        docker rm -f loggenerator loglistener || exit 0
+                        docker-compose up -d --build
+                        '''
+                    }
+                }
+            }
+        }
+
+        stage('Verify Running Containers') {
+            steps {
+                echo "🩺 Checking containers..."
+                script {
+                    if (isUnix()) {
+                        sh 'docker ps -a'
+                    } else {
+                        bat 'docker ps -a'
+                    }
+                }
+            }
+        }
+    }
+
+    post {
+        always {
+            echo "⚠️ Pipeline finished."
+        }
+    }
+}
