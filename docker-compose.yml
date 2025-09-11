@@ -1,144 +1,110 @@
-version: "3.8"
+version: '3.8'
 
 services:
-
-  db:
-    image: postgres:15-alpine
+  postgres:
+    image: postgres:16
+    container_name: postgres-db
     environment:
-      POSTGRES_DB: logdata
+      POSTGRES_DB: logdb
       POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
+      POSTGRES_PASSWORD: tiger
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
     ports:
       - "5432:5432"
-    volumes:
-      - /home/ubuntu/log/pgdata:/var/lib/postgresql/data
-    networks:
-      - logprocessing_net
-    restart: always
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres -d logdata"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-
-  logcollector:
-    image: ${ECR_ACCOUNT}.dkr.ecr.${AWS_REGION}.amazonaws.com/logcollector:${IMAGE_TAG}
-    ports:
-      - "8789:8789"
-    environment:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/logdata
-      SPRING_DATASOURCE_USERNAME: postgres
-      SPRING_DATASOURCE_PASSWORD: postgres
-      SERVER_PORT: 8789
-    volumes:
-      - /home/ubuntu/log:/app/logs
-    depends_on:
-      db:
-        condition: service_healthy
-    networks:
-      - logprocessing_net
-    restart: always
-
-  loginfopersistor:
-    image: ${ECR_ACCOUNT}.dkr.ecr.${AWS_REGION}.amazonaws.com/loginfopersistor:${IMAGE_TAG}
-    ports:
-      - "8783:8783"
-    environment:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/logdata
-      SPRING_DATASOURCE_USERNAME: postgres
-      SPRING_DATASOURCE_PASSWORD: postgres
-      SERVER_PORT: 8783
-    depends_on:
-      db:
-        condition: service_healthy
-    networks:
-      - logprocessing_net
-    restart: always
-
-  logwarnpersistor:
-    image: ${ECR_ACCOUNT}.dkr.ecr.${AWS_REGION}.amazonaws.com/logwarnpersistor:${IMAGE_TAG}
-    ports:
-      - "8784:8784"
-    environment:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/logdata
-      SPRING_DATASOURCE_USERNAME: postgres
-      SPRING_DATASOURCE_PASSWORD: postgres
-      SERVER_PORT: 8784
-    depends_on:
-      db:
-        condition: service_healthy
-    networks:
-      - logprocessing_net
-    restart: always
-
-  logdebugpersistor:
-    image: ${ECR_ACCOUNT}.dkr.ecr.${AWS_REGION}.amazonaws.com/logdebugpersistor:${IMAGE_TAG}
-    ports:
-      - "8781:8781"
-    environment:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/logdata
-      SPRING_DATASOURCE_USERNAME: postgres
-      SPRING_DATASOURCE_PASSWORD: postgres
-      SERVER_PORT: 8781
-    depends_on:
-      db:
-        condition: service_healthy
-    networks:
-      - logprocessing_net
-    restart: always
-
-  logerrorpersistor:
-    image: ${ECR_ACCOUNT}.dkr.ecr.${AWS_REGION}.amazonaws.com/logerrorpersistor:${IMAGE_TAG}
-    ports:
-      - "8782:8782"
-    environment:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/logdata
-      SPRING_DATASOURCE_USERNAME: postgres
-      SPRING_DATASOURCE_PASSWORD: postgres
-      SERVER_PORT: 8782
-    depends_on:
-      db:
-        condition: service_healthy
-    networks:
-      - logprocessing_net
-    restart: always
 
   loganalyser:
-    image: ${ECR_ACCOUNT}.dkr.ecr.${AWS_REGION}.amazonaws.com/loganalyser:${IMAGE_TAG}
-    ports:
-      - "8086:8086"
+    build: ./loganalyser
+    container_name: loganalyser
+    image: mudam5/loganalyser:latest
     environment:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/logdata
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/logdb
       SPRING_DATASOURCE_USERNAME: postgres
-      SPRING_DATASOURCE_PASSWORD: postgres
-      SERVER_PORT: 8086
-      FRONTEND_URL: http://frontend:80
+      SPRING_DATASOURCE_PASSWORD: tiger
     depends_on:
-      db:
-        condition: service_healthy
-    networks:
-      - logprocessing_net
-    restart: always
-
-  frontend:
-    image: ${ECR_ACCOUNT}.dkr.ecr.${AWS_REGION}.amazonaws.com/frontend:${IMAGE_TAG}
+      - postgres
     ports:
-      - "3001:80"
+      - "8081:8080"
+
+  logcollector:
+    build: ./logcollector
+    container_name: logcollector
+    image: mudam5/logcollector:latest
+    ports:
+      - "8082:8080"
+
+  logdebugpersistor:
+    build: ./logdebugpersistor
+    container_name: logdebugpersistor
+    image: mudam5/logdebugpersistor:latest
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/logdb
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: tiger
     depends_on:
-      - logcollector
-      - loginfopersistor
-      - logwarnpersistor
-      - logdebugpersistor
-      - logerrorpersistor
-      - loganalyser
-    networks:
-      - logprocessing_net
-    restart: always
+      - postgres
+    ports:
+      - "8083:8080"
+
+  logerrorpersistor:
+    build: ./logerrorpersistor
+    container_name: logerrorpersistor
+    image: mudam5/logerrorpersistor:latest
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/logdb
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: tiger
+    depends_on:
+      - postgres
+    ports:
+      - "8084:8080"
+
+  loginfopersistor:
+    build: ./loginfopersistor
+    container_name: loginfopersistor
+    image: mudam5/loginfopersistor:latest
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/logdb
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: tiger
+    depends_on:
+      - postgres
+    ports:
+      - "8085:8080"
+
+  logwarnpersistor:
+    build: ./logwarnpersistor
+    container_name: logwarnpersistor
+    image: mudam5/logwarnpersistor:latest
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/logdb
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: tiger
+    depends_on:
+      - postgres
+    ports:
+      - "8086:8080"
+
+  loglistener:
+    build: ./loglistener
+    container_name: loglistener
+    image: mudam5/loglistener:latest
+    ports:
+      - "8087:8080"
+
+  loglistenercollector:
+    build: ./loglistenercollector
+    container_name: loglistenercollector
+    image: mudam5/loglistenercollector:latest
+    ports:
+      - "8088:8080"
+
+  loggenerator:
+    build: ./loggenerator
+    container_name: loggenerator
+    image: mudam5/loggenerator:latest
+    ports:
+      - "8089:8080"
 
 volumes:
-  pgdata:
-  log:
-
-networks:
-  logprocessing_net:
-    driver: bridge
+  postgres_data:
