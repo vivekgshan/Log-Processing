@@ -7,27 +7,35 @@ pipeline {
     }
 
     environment {
-        AWS_REGION = 'ca-central-1' // Change as needed
-        ECR_ACCOUNT = '675169530083' // Replace with your AWS Account ID
+        AWS_REGION = 'ca-central-1'
+        ECR_ACCOUNT = '675169530083'
         IMAGE_TAG = "${BUILD_NUMBER}"
-        Git_repo = 'https://github.com/Nikhilgujela/Log-Processing-test-nik.git'
+        Git_repo = 'https://github.com/vivekgshan/Log-Processing.git'
         AWS_ACCESS_KEY_ID = credentials('AWS_ACCESS_KEY_ID')
         AWS_SECRET_ACCESS_KEY = credentials('AWS_SECRET_ACCESS_KEY')
     }
 
     stages {
+        stage('Clean Workspace') {
+          steps {
+            deleteDir()  // deletes the current workspace contents
+          }
+        }        
 
-        stage('Checkout') {            
+        stage('Checkout') {
             steps {
-                git branch: 'dev', changelog: false, poll: false, url: "${Git_repo}"
+                git branch: 'devops-nikhil-test', changelog: false, poll: false, url: "${Git_repo}"
             }
         }
 
-        stage('Build Backend') {
+        stage('Build All Backend Services') {
             steps {
                 script {
-                    def services = ['logcreator']
-                    services.each { svc ->
+                    def backendServices = [
+                        'logcollector', 'loginfopersistor','logwarnpersistor', 
+                        'logdebugpersistor','logerrorpersistor','loganalyser'
+                    ]
+                    backendServices.each { svc ->
                         dir("BACKEND/${svc}") {
                             sh 'mvn clean package -DskipTests'
                         }
@@ -35,11 +43,15 @@ pipeline {
                 }
             }
         }
+
         stage('Create ECR Repositories') {
             steps {
                 script {
-                    def repos = ['logcreator', 'frontend']
-                    repos.each { repo ->
+                    def allRepos = [
+                        'logcollector', 'loginfopersistor','logwarnpersistor', 
+                        'logdebugpersistor','logerrorpersistor', 'loganalyser', 'frontend'
+                    ]
+                    allRepos.each { repo ->
                         sh """
                         aws ecr describe-repositories --repository-names ${repo} --region ${AWS_REGION} || \
                         aws ecr create-repository --repository-name ${repo} --region ${AWS_REGION}
@@ -48,60 +60,72 @@ pipeline {
                 }
             }
         }
+
         stage('Docker Build') {
             steps {
                 script {
-                    def services = ['logcreator']
-
-                    services.each { svc ->
+                    def backendServices = [
+                        'logcollector', 'loginfopersistor','logwarnpersistor', 
+                        'logdebugpersistor','logerrorpersistor','loganalyser'
+                    ]
+                    backendServices.each { svc ->
                         def image = "${ECR_ACCOUNT}.dkr.ecr.${AWS_REGION}.amazonaws.com/${svc}:${IMAGE_TAG}"
                         sh "docker build -t ${image} BACKEND/${svc}"
                     }
 
-                    // Frontend image
                     def frontendImage = "${ECR_ACCOUNT}.dkr.ecr.${AWS_REGION}.amazonaws.com/frontend:${IMAGE_TAG}"
                     sh "docker build -t ${frontendImage} FRONTEND"
                 }
             }
         }
 
-
         stage('Login to ECR') {
             steps {
                 sh """
-                    aws ecr get-login-password --region ${AWS_REGION} | \
-                    docker login --username AWS --password-stdin ${ECR_ACCOUNT}.dkr.ecr.${AWS_REGION}.amazonaws.com
+                aws ecr get-login-password --region ${AWS_REGION} | \
+                docker login --username AWS --password-stdin ${ECR_ACCOUNT}.dkr.ecr.${AWS_REGION}.amazonaws.com
                 """
             }
         }
 
-        stage('Push to ECR') {
+        stage('Push Images to ECR') {
             steps {
                 script {
-                    def services = ['logcreator','frontend']
+                    def services = [
+                        'logcollector', 'loginfopersistor','logwarnpersistor', 
+                        'logdebugpersistor','logerrorpersistor','loganalyser','frontend'
+                    ]
                     services.each { svc ->
                         def image = "${ECR_ACCOUNT}.dkr.ecr.${AWS_REGION}.amazonaws.com/${svc}:${IMAGE_TAG}"
                         sh "docker push ${image}"
                     }
-
-                    def frontendImage = "${ECR_ACCOUNT}.dkr.ecr.${AWS_REGION}.amazonaws.com/frontend:${IMAGE_TAG}"
-                    sh "docker push ${frontendImage}"
                 }
             }
         }
 
-        stage('Deploy with Docker Compose') {
+        stage('Generate & Deploy Docker Compose') {
             steps {
                 script {
-                    // Update docker-compose.yml using sed or dynamically
-                    def composeTemplate = readFile('docker-compose.yml')
+                    def baseCompose = readFile('docker-compose.yml')
 
-                    def updatedCompose = composeTemplate
-                        .replaceAll(/image:.*log-processing-backend.*/, "image: ${ECR_ACCOUNT}.dkr.ecr.${AWS_REGION}.amazonaws.com/logcreator:${IMAGE_TAG}")
-                        .replaceAll(/image:.*log-processing-frontend.*/, "image: ${ECR_ACCOUNT}.dkr.ecr.${AWS_REGION}.amazonaws.com/frontend:${IMAGE_TAG}")
+                    // Replace backend services
+                    def updatedCompose = baseCompose
+                    def services = [
+                        'logcollector', 'loginfopersistor','logwarnpersistor', 
+                        'logdebugpersistor','logerrorpersistor','loganalyser'
+                    ]
+                    services.each { svc ->
+                        def pattern = "image:.*${svc}.*"
+                        def newImage = "image: ${ECR_ACCOUNT}.dkr.ecr.${AWS_REGION}.amazonaws.com/${svc}:${IMAGE_TAG}"
+                        updatedCompose = updatedCompose.replaceAll(pattern, newImage)
+                    }
+
+                    // Replace frontend image
+                    updatedCompose = updatedCompose.replaceAll(/image:.*frontend.*/, "image: ${ECR_ACCOUNT}.dkr.ecr.${AWS_REGION}.amazonaws.com/frontend:${IMAGE_TAG}")
 
                     writeFile file: 'docker-compose.generated.yml', text: updatedCompose
-                    sh 'docker compose version'
+
+                    // Deploy using docker compose
                     sh 'docker compose -f docker-compose.generated.yml down'
                     sh 'docker compose -f docker-compose.generated.yml up -d'
                 }
