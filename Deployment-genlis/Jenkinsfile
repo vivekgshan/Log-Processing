@@ -1,0 +1,50 @@
+pipeline {
+    agent any
+
+    environment {
+        PROJECT_DIR = "Log-Processing"
+        BACKEND_DIR = "${WORKSPACE}/BACKEND"
+        DEPLOY_DIR  = "${WORKSPACE}/Deployment-genlis"
+    }
+
+    stages {
+        stage('Checkout') {
+            steps {
+                git branch: 'dev-cloud', url: 'https://github.com/vivekgshan/Log-Processing.git'
+            }
+        }
+
+        stage('Build loggenerator & loglistener') {
+            steps {
+                script {
+                    echo "Building loggenerator image from ${BACKEND_DIR}/loggenerator"
+                    sh "docker build -t loggenerator:latest ${BACKEND_DIR}/loggenerator"
+
+                    echo "Building loglistener image from ${BACKEND_DIR}/loglistener"
+                    sh "docker build -t loglistener:latest ${BACKEND_DIR}/loglistener"
+                }
+            }
+        }
+
+        stage('Deploy with Docker Compose') {
+            steps {
+                dir("${DEPLOY_DIR}") {
+                    script {
+                        echo "Shutting down any existing stack..."
+                        sh 'docker-compose -v down || true'
+
+                        echo "Starting new stack with rebuilt images..."
+                        sh 'docker-compose up -d --build'
+                    }
+                }
+            }
+        }
+    }
+
+    post {
+        always {
+            echo "Listing all containers after deployment..."
+            sh 'docker ps -a || true'
+        }
+    }
+}
