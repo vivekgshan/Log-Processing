@@ -15,9 +15,9 @@ scrape_configs:
   # loggenerator
   - job_name: "loggenerator"
     static_configs:
-      - targets: ["host.docker.internal:8780"]   # or <EC2-private-ip>:8780
+      - targets: ["http://3.99.207.184:8780"]   # or <EC2-private-ip>:8780
 
   # loglistener
   - job_name: "loglistener"
     static_configs:
-      - targets: ["host.docker.internal:8785"]   # or <EC2-private-ip>:8785
+      - targets: ["http://3.99.207.184:8785"]   # or <EC2-private-ip>:8785
