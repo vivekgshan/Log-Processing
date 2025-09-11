@@ -14,10 +14,12 @@ scrape_configs:
 
   # loggenerator
   - job_name: "loggenerator"
+    metrics_path: "/actuator/prometheus"
     static_configs:
       - targets: ["3.99.207.184:8780"]   # or <EC2-private-ip>:8780
 
   # loglistener
   - job_name: "loglistener"
+    metrics_path: "/actuator/prometheus"
     static_configs:
       - targets: ["3.99.207.184:8785"]   # or <EC2-private-ip>:8785
