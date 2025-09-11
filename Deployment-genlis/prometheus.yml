@@ -2,10 +2,22 @@ global:
   scrape_interval: 15s
 
 scrape_configs:
+  # Prometheus itself
   - job_name: "prometheus"
     static_configs:
       - targets: ["prometheus:9090"]
 
+  # cAdvisor
   - job_name: "cadvisor"
     static_configs:
       - targets: ["cadvisor:8080"]
+
+  # loggenerator
+  - job_name: "loggenerator"
+    static_configs:
+      - targets: ["host.docker.internal:8780"]   # or <EC2-private-ip>:8780
+
+  # loglistener
+  - job_name: "loglistener"
+    static_configs:
+      - targets: ["host.docker.internal:8785"]   # or <EC2-private-ip>:8785
