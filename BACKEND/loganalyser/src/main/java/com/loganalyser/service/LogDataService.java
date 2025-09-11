@@ -2,7 +2,7 @@ package com.loganalyser.service;
 
 import org.springframework.stereotype.Service;
 
-import com.loganalyser.controller.dto.LogData;
+import com.loganalyser.dto.LogData;
 import com.loganalyser.model.LogEntity;
 import com.loganalyser.repository.LogDataRepository;
 
@@ -87,7 +87,7 @@ public class LogDataService {
 		
 		for(LogEntity le:logEntityList) {
 			LogData ld= new LogData();
-			ld.setTimestamp(le.getTimestamp().format(FORMATTER));
+			ld.setTimestamp(le.getTimestamp());
 			ld.setLogType(le.getLogType());
 			ld.setMessage(le.getMessage());
 			ldList.add(ld);
