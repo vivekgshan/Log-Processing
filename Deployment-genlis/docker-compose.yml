@@ -2,16 +2,22 @@ version: "3.9"
 
 services:
   loggenerator:
+    build:
+      context: ../BACKEND/loggenerator
+      dockerfile: Dockerfile
     image: loggenerator:latest
     container_name: loggenerator
     ports:
       - "8780:8780"
     volumes:
-      - shared-logs:/root/log     # loggenerator writes logs here
+      - shared-logs:/root/log
     networks:
       - lognet
 
   loglistener:
+    build:
+      context: ../BACKEND/loglistener
+      dockerfile: Dockerfile
     image: loglistener:latest
     container_name: loglistener
     ports:
@@ -19,7 +25,7 @@ services:
     depends_on:
       - loggenerator
     volumes:
-      - shared-logs:/root/log              # loglistener reads same logs here
+      - shared-logs:/root/log
     networks:
       - lognet
 
