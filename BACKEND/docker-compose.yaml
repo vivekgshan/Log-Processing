@@ -1,0 +1,113 @@
+version: "3.9"
+
+services:
+  postgres:
+    image: postgres:16
+    container_name: postgres
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: logdata
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data   # ✅ attach volume
+    networks:
+      - lognet
+
+  logcollector:
+    build: ./logcollector
+    container_name: logcollector
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/logdata
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: postgres
+      SERVER_PORT: 8789
+    depends_on:
+      - postgres
+    ports:
+      - "8789:8789"
+    networks:
+      - lognet
+
+  logerrorpersistor:
+    build: ./logerrorpersistor
+    container_name: logerrorpersistor
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/logdata
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: postgres
+      SERVER_PORT: 8782
+    depends_on:
+      - postgres
+    ports:
+      - "8782:8782"
+    networks:
+      - lognet
+
+  logdebugpersistor:
+    build: ./logdebugpersistor
+    container_name: logdebugpersistor
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/logdata
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: postgres
+      SERVER_PORT: 8781
+    depends_on:
+      - postgres
+    ports:
+      - "8781:8781"
+    networks:
+      - lognet
+
+  logwarnpersistor:
+    build: ./logwarnpersistor
+    container_name: logwarnpersistor
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/logdata
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: postgres
+      SERVER_PORT: 8784
+    depends_on:
+      - postgres
+    ports:
+      - "8784:8784"
+    networks:
+      - lognet
+
+  loginfopersistor:
+    build: ./loginfopersistor
+    container_name: loginfopersistor
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/logdata
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: postgres
+      SERVER_PORT: 8783
+    depends_on:
+      - postgres
+    ports:
+      - "8783:8783"
+    networks:
+      - lognet
+
+  loganalyser:
+    build: ./loganalyser
+    container_name: loganalyser
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/logdata
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: postgres
+      SERVER_PORT: 8086
+    depends_on:
+      - postgres
+    ports:
+      - "8086:8086"
+    networks:
+      - lognet
+volumes:
+  postgres_data: {}
+
+networks:
+  lognet:
+    driver: bridge
+
