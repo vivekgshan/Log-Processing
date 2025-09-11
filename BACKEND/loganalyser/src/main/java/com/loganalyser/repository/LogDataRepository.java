@@ -10,7 +10,10 @@ import java.util.List;
 
 public interface LogDataRepository extends JpaRepository<LogEntity, Long> {
 
-
+	/*@Query("SELECT COUNT(l) FROM LogData l WHERE l.timestamp BETWEEN :start AND :end AND l.logtype = :logtype")
+	Long countByLogtypeAndTimeBetween(@Param("start") LocalDateTime start,
+	                                  @Param("end") LocalDateTime end,
+	                                  @Param("logtype") String logtype);*/
 	
 	
 

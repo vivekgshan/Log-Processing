@@ -26,6 +26,23 @@ public class LogDataService {
 		this.repository = repository;
 	}
 
+	/*public Long getLogCountBetween(LocalDateTime start, LocalDateTime end, String logtype) {
+		if (start == null || end == null || logtype == null || logtype.isBlank()) {
+			throw new IllegalArgumentException("Start, end, and logtype must not be null/empty");
+		}
+
+		// Pass LocalDateTime directly
+		return repository.countByLogtypeAndTimeBetween(start, end, logtype);
+	}
+		// return repository.countByLogtypeAndTimeBetween(start, end, logtype);
+		repository.countByLogtypeAndTimestampBetween(logtype, start, end);
+	}*/
+	
+	
+	/*public List<LogData> getAllLogs() {
+        return repository.findAll();
+    }*/
+
 	public Map<String, Long> getLogCountsByLevel() {
         List<Object[]> results = repository.countLogsByLevel();
         Map<String, Long> counts = new HashMap<>();
@@ -70,8 +87,9 @@ public class LogDataService {
 	public List<LogData> findLogsOrderedByTimestampDesc(){
 		List<LogEntity> logEntityList=repository.logs();
 		List<LogData> ldList= new ArrayList<LogData>();
-		LogData ld= new LogData();
+		
 		for(LogEntity le:logEntityList) {
+			LogData ld= new LogData();
 			ld.setTimestamp(le.getTimestamp());
 			ld.setLogType(le.getLogType());
 			ld.setMessage(le.getMessage());

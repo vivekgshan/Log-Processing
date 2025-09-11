@@ -2,8 +2,7 @@ import axios from "axios";
 import { MOCK_LOGS, MOCK_COUNTS } from "../mock/logs"; 
 import { timeSeriesData } from "../mock/logData";
 
-const BASE_URL =
-  process.env.NODE_ENV === "development" ? "" : "http://3.26.28.206:9097";
+const BASE_URL = process.env.REACT_APP_BASE_URL;
 
 export const fetchLogs = async () => {
   try {
