@@ -8,10 +8,10 @@ pipeline {
     environment {
         // EC2 connection details
         EC2_1 = "ec2-user@ip-172-31-39-213"   // loggenerator + loglistener
-        EC2_2 = "ubuntu@<EC2-2-PUBLIC-IP>"   // logcollector + persistors + loganalyser
+        EC2_2 = "ubuntu@52.66.201.133"   // logcollector + persistors + loganalyser
         EC2_3 = "ubuntu@<EC2-3-PUBLIC-IP>"   // UI
         REPO_URL = "https://github.com/vivekgshan/Log-Processing.git"
-        BRANCH = "ramtestdev"
+        BRANCH = "dev-ram"
         DEPLOY_DIR = "/home/ubuntu/Log-Processing"
     }
 
