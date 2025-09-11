@@ -1,18 +1,14 @@
-# Use an official OpenJDK image from the Docker Hub
-FROM openjdk:17-jdk-slim
-
-# Set the working directory inside the container
+# Stage 1: Build JAR using Maven
+FROM maven:3.9.6-eclipse-temurin-17 AS builder
 WORKDIR /app
+COPY pom.xml .
+RUN mvn dependency:go-offline
+COPY src ./src
+RUN mvn clean package -DskipTests
 
-# Install PostgreSQL client
-RUN apt-get update && \
-    apt-get install -y --no-install-recommends postgresql-client && \
-    rm -rf /var/lib/apt/lists/*
-    
-RUN ls
-COPY target/logWarnPersistor-3.5.5.jar app.jar
-
+# Stage 2: Create lightweight image for running
+FROM eclipse-temurin:17-jdk-alpine
+WORKDIR /app
+COPY --from=builder /app/target/*-3.5.5.jar app.jar
 EXPOSE 8784
-
-# Command to run the jar file
-CMD ["java", "-jar", "app.jar"]
+ENTRYPOINT ["java", "-jar", "app.jar"]
