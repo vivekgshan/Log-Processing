@@ -87,7 +87,7 @@ public class LogDataService {
 		
 		for(LogEntity le:logEntityList) {
 			LogData ld= new LogData();
-			ld.setTimestamp(le.getTimestamp());
+			ld.setTimestamp(le.getTimestamp().format(FORMATTER));
 			ld.setLogType(le.getLogType());
 			ld.setMessage(le.getMessage());
 			ldList.add(ld);
@@ -95,11 +95,5 @@ public class LogDataService {
 		return ldList;
 	}
 	
-    public static LocalDateTime parseFlexible(String dateTime) {
-        try {
-            return LocalDateTime.parse(dateTime, FORMATTER_WITH_T);
-        } catch (Exception e) {
-            return LocalDateTime.parse(dateTime, FORMATTER);
-        }
-    }
+    
 }
