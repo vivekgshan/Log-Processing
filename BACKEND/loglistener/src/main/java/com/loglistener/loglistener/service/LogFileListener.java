@@ -16,6 +16,8 @@ import com.loglistener.loglistener.request.LogEntry;
 import java.io.File;
 import java.io.IOException;
 import java.io.RandomAccessFile;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -31,7 +33,7 @@ public class LogFileListener {
 	String userHome = System.getProperty("user.home");
 	private final File logDir = new File(userHome+"/log");
 	private final Map<String, Long> filePointerMap = new HashMap<>();
-	
+	private final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
 	@Scheduled(fixedDelay = 10000) // check every 10 seconds
 	public void watchLogs() {
@@ -109,7 +111,7 @@ public class LogFileListener {
 				throw new IllegalArgumentException("Invalid log line: " + logLine);
 			}
 
-			String timestamp = parts[0].trim();       // "2025-09-03 16:36:23"
+			LocalDateTime timestamp = LocalDateTime.parse(parts[0].trim(), formatter);       // "2025-09-03 16:36:23"
 			String logType   = parts[1].trim().toUpperCase(); // "WARN" (normalized to uppercase)
 			String message   = parts[2].trim();       // "Some message"
 
