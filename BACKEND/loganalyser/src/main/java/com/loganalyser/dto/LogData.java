@@ -1,8 +1,10 @@
-package com.loganalyser.controller.dto;
+package com.loganalyser.dto;
+
+import java.time.LocalDateTime;
 
 public class LogData {
 
-	private String timestamp;
+	private LocalDateTime timestamp;
 	private String logType;
 	private String message;
 	public LogData() {
@@ -15,10 +17,11 @@ public class LogData {
 		this.logType = logType;
 		this.message = message;
 	}
-	public String getTimestamp() {
+
+	public LocalDateTime getTimestamp() {
 		return timestamp;
 	}
-	public void setTimestamp(String timestamp) {
+	public void setTimestamp(LocalDateTime timestamp) {
 		this.timestamp = timestamp;
 	}
 	public String getLogType() {
