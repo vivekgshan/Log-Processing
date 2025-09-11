@@ -32,7 +32,7 @@ public class DebugController {
 		LogEntity le= new LogEntity();
 		le.setLogType(log.getLogType());
 		le.setMessage(log.getMessage());
-		le.setTimestamp(LocalDateTime.parse(log.getTimestamp(), FORMATTER));
+		le.setTimestamp(log.getTimestamp());
 		logRepository.save(le);
 
 		System.out.println("✅ Saved DEBUG log: " + log.getMessage());

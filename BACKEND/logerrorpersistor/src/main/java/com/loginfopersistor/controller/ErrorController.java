@@ -28,7 +28,7 @@ public class ErrorController {
 		LogEntity le= new LogEntity();
 		le.setLogType(log.getLogType());
 		le.setMessage(log.getMessage());
-		le.setTimestamp(LocalDateTime.parse(log.getTimestamp(), FORMATTER));
+		le.setTimestamp(log.getTimestamp());
 		logRepository.save(le);
 
 		System.out.println("✅ Saved ERROR log: " + log.getMessage());

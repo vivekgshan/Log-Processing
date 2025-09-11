@@ -31,7 +31,7 @@ public class InfoController {
 		LogEntity le= new LogEntity();
 		le.setLogType(log.getLogType());
 		le.setMessage(log.getMessage());
-		le.setTimestamp(LocalDateTime.parse(log.getTimestamp(), FORMATTER));
+		le.setTimestamp(log.getTimestamp());
 		logRepository.save(le);
 		System.out.println("✅ Saved INFO log: " + log.getMessage());
 		return ResponseEntity.ok("Info log saved successfully");

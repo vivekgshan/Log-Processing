@@ -1,7 +1,12 @@
 package com.logdebugpersistor.DTO;
 
+import java.time.LocalDateTime;
+
+import com.fasterxml.jackson.annotation.JsonFormat;
+
 public class LogEntry {
-	private String timestamp;
+	@JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+	private LocalDateTime timestamp;
 	private String logType;
 	private String message;
 
@@ -21,11 +26,11 @@ public class LogEntry {
 		this.message = message;
 	}
 
-	public String getTimestamp() {
+	public LocalDateTime getTimestamp() {
 		return timestamp;
 	}
 
-	public void setTimestamp(String timestamp) {
+	public void setTimestamp(LocalDateTime timestamp) {
 		this.timestamp = timestamp;
 	}
 }
