@@ -2,6 +2,7 @@ package com.loganalyser.service;
 
 import org.springframework.stereotype.Service;
 
+import com.loganalyser.controller.dto.LogData;
 import com.loganalyser.model.LogEntity;
 import com.loganalyser.repository.LogDataRepository;
 
@@ -18,8 +19,10 @@ import java.sql.Timestamp;
 @Service
 public class LogDataService {
 	private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+	private static final DateTimeFormatter FORMATTER_WITH_T =
+            DateTimeFormatter.ISO_LOCAL_DATE_TIME; // yyyy-MM-dd'T'HH:mm:ss
 
-	private final LogDataRepository repository;
+	LogDataRepository repository;
 
 	public LogDataService(LogDataRepository repository) {
 		this.repository = repository;
@@ -78,7 +81,25 @@ public class LogDataService {
 	    return output;
 	}
 
-	public List<LogEntity> findLogsOrderedByTimestampDesc(){
-		return repository.logs();
+	public List<LogData> findLogsOrderedByTimestampDesc(){
+		List<LogEntity> logEntityList=repository.logs();
+		List<LogData> ldList= new ArrayList<LogData>();
+		
+		for(LogEntity le:logEntityList) {
+			LogData ld= new LogData();
+			ld.setTimestamp(le.getTimestamp());
+			ld.setLogType(le.getLogType());
+			ld.setMessage(le.getMessage());
+			ldList.add(ld);
+		}
+		return ldList;
 	}
+	
+    public static LocalDateTime parseFlexible(String dateTime) {
+        try {
+            return LocalDateTime.parse(dateTime, FORMATTER_WITH_T);
+        } catch (Exception e) {
+            return LocalDateTime.parse(dateTime, FORMATTER);
+        }
+    }
 }
