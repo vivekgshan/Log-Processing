@@ -2,7 +2,6 @@ package com.loganalyser.service;
 
 import org.springframework.stereotype.Service;
 
-import com.loganalyser.controller.dto.LogData;
 import com.loganalyser.model.LogEntity;
 import com.loganalyser.repository.LogDataRepository;
 
@@ -19,10 +18,8 @@ import java.sql.Timestamp;
 @Service
 public class LogDataService {
 	private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-	private static final DateTimeFormatter FORMATTER_WITH_T =
-            DateTimeFormatter.ISO_LOCAL_DATE_TIME; // yyyy-MM-dd'T'HH:mm:ss
 
-	LogDataRepository repository;
+	private final LogDataRepository repository;
 
 	public LogDataService(LogDataRepository repository) {
 		this.repository = repository;
@@ -35,9 +32,6 @@ public class LogDataService {
 
 		// Pass LocalDateTime directly
 		return repository.countByLogtypeAndTimeBetween(start, end, logtype);
-	}
-		// return repository.countByLogtypeAndTimeBetween(start, end, logtype);
-		repository.countByLogtypeAndTimestampBetween(logtype, start, end);
 	}*/
 	
 	
@@ -60,10 +54,7 @@ public class LogDataService {
 	    Map<LocalDateTime, Map<String, Long>> grouped = new TreeMap<LocalDateTime, Map<String,Long>>();
 
 	    for (LogEntity log : logs) {
-	        String timest = log.getTimestamp();
-	    	
-	    	//LocalDateTime ts = LocalDateTime.parse(timest, FORMATTER);
-	    	LocalDateTime ts = parseFlexible(timest);
+	    	LocalDateTime ts= log.getTimestamp();
 	        int minute = (ts.getMinute() / 5) * 5;
 	        LocalDateTime bucket = ts.withMinute(minute).withSecond(0).withNano(0);
 
@@ -87,25 +78,7 @@ public class LogDataService {
 	    return output;
 	}
 
-	public List<LogData> findLogsOrderedByTimestampDesc(){
-		List<LogEntity> logEntityList=repository.logs();
-		List<LogData> ldList= new ArrayList<LogData>();
-		
-		for(LogEntity le:logEntityList) {
-			LogData ld= new LogData();
-			ld.setTimestamp(le.getTimestamp());
-			ld.setLogType(le.getLogType());
-			ld.setMessage(le.getMessage());
-			ldList.add(ld);
-		}
-		return ldList;
+	public List<LogEntity> findLogsOrderedByTimestampDesc(){
+		return repository.logs();
 	}
-	
-    public static LocalDateTime parseFlexible(String dateTime) {
-        try {
-            return LocalDateTime.parse(dateTime, FORMATTER_WITH_T);
-        } catch (Exception e) {
-            return LocalDateTime.parse(dateTime, FORMATTER);
-        }
-    }
 }
