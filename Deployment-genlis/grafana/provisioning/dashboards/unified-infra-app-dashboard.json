@@ -12,7 +12,7 @@
       "type": "timeseries",
       "targets": [
         {
-          "expr": "100 - (avg by (instance) (rate(node_cpu_seconds_total{mode=\"idle\"}[5m])) * 100)",
+          "expr": "100 - (avg by (instance) (rate(node_cpu_seconds_total{mode=\\\"idle\\\"}[5m])) * 100)",
           "legendFormat": "{{instance}}"
         }
       ],
@@ -34,7 +34,7 @@
       "type": "timeseries",
       "targets": [
         {
-          "expr": "node_filesystem_avail_bytes{mountpoint=\"/\"}",
+          "expr": "node_filesystem_avail_bytes{mountpoint=\\\"/\\\"}",
           "legendFormat": "{{instance}}"
         }
       ],
@@ -60,7 +60,7 @@
       "type": "timeseries",
       "targets": [
         {
-          "expr": "rate(container_cpu_usage_seconds_total{container_label_com_docker_compose_service=~\"loggenerator|loglistener\"}[2m]) * 100",
+          "expr": "rate(container_cpu_usage_seconds_total{container_label_com_docker_compose_service=~\\\"loggenerator|loglistener\\\"}[2m]) * 100",
           "legendFormat": "{{container_label_com_docker_compose_service}}"
         }
       ],
@@ -71,7 +71,7 @@
       "type": "timeseries",
       "targets": [
         {
-          "expr": "container_memory_usage_bytes{container_label_com_docker_compose_service=~\"loggenerator|loglistener\"}",
+          "expr": "container_memory_usage_bytes{container_label_com_docker_compose_service=~\\\"loggenerator|loglistener\\\"}",
           "legendFormat": "{{container_label_com_docker_compose_service}}"
         }
       ],
@@ -82,11 +82,11 @@
       "type": "timeseries",
       "targets": [
         {
-          "expr": "rate(container_network_receive_bytes_total{container_label_com_docker_compose_service=~\"loggenerator|loglistener\"}[2m])",
+          "expr": "rate(container_network_receive_bytes_total{container_label_com_docker_compose_service=~\\\"loggenerator|loglistener\\\"}[2m])",
           "legendFormat": "RX {{container_label_com_docker_compose_service}}"
         },
         {
-          "expr": "rate(container_network_transmit_bytes_total{container_label_com_docker_compose_service=~\"loggenerator|loglistener\"}[2m])",
+          "expr": "rate(container_network_transmit_bytes_total{container_label_com_docker_compose_service=~\\\"loggenerator|loglistener\\\"}[2m])",
           "legendFormat": "TX {{container_label_com_docker_compose_service}}"
         }
       ],
@@ -97,7 +97,7 @@
       "type": "timeseries",
       "targets": [
         {
-          "expr": "jvm_memory_used_bytes{job=~\"loggenerator|loglistener\", area=\"heap\"}",
+          "expr": "jvm_memory_used_bytes{job=~\\\"loggenerator|loglistener\\\", area=\\\"heap\\\"}",
           "legendFormat": "{{job}}"
         }
       ],
@@ -108,7 +108,7 @@
       "type": "timeseries",
       "targets": [
         {
-          "expr": "jvm_threads_live_threads{job=~\"loggenerator|loglistener\"}",
+          "expr": "jvm_threads_live_threads{job=~\\\"loggenerator|loglistener\\\"}",
           "legendFormat": "{{job}}"
         }
       ],
@@ -119,18 +119,18 @@
       "type": "timeseries",
       "targets": [
         {
-          "expr": "rate(http_server_requests_seconds_count{job=~\"loggenerator|loglistener\"}[1m])",
+          "expr": "rate(http_server_requests_seconds_count{job=~\\\"loggenerator|loglistener\\\"}[1m])",
           "legendFormat": "{{job}} {{status}}"
         }
       ],
       "gridPos": { "h": 6, "w": 12, "x": 0, "y": 30 }
     },
     {
-      "title": "HTTP Request Latency (95th Percentile)",
+      "title": "HTTP Request Average Latency (5m)",
       "type": "timeseries",
       "targets": [
         {
-          "expr": "rate(http_server_requests_seconds_sum{job=~"loggenerator|loglistener"}[5m])/rate(http_server_requests_seconds_count{job=~"loggenerator|loglistener"}[5m])",
+          "expr": "rate(http_server_requests_seconds_sum{job=~\\\"loggenerator|loglistener\\\"}[5m]) / rate(http_server_requests_seconds_count{job=~\\\"loggenerator|loglistener\\\"}[5m])",
           "legendFormat": "{{job}}"
         }
       ],
