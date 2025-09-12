@@ -1,0 +1,27 @@
+{
+  "title": "Unified Infra + App Dashboard",
+  "uid": "infra-app-unified",
+  "tags": ["springboot", "docker", "node_exporter", "unified"],
+  "schemaVersion": 30,
+  "panels": [
+    {
+      "title": "Host CPU Usage (%)",
+      "type": "timeseries",
+      "targets": [
+        { "expr": "100 - (avg by (instance) (rate(node_cpu_seconds_total{mode=\"idle\"}[5m])) * 100)", "legendFormat": "{{instance}}" }
+      ],
+      "gridPos": { "h": 6, "w": 12, "x": 0, "y": 0 }
+    },
+    {
+      "title": "Container CPU Usage (%)",
+      "type": "timeseries",
+      "targets": [
+        { "expr": "rate(container_cpu_usage_seconds_total{container_label_com_docker_compose_service=~\"loggenerator|loglistener\"}[2m]) * 100", "legendFormat": "{{container_label_com_docker_compose_service}}" }
+      ],
+      "gridPos": { "h": 6, "w": 12, "x": 12, "y": 0 }
+    }
+  ],
+  "time": { "from": "now-30m", "to": "now" },
+  "timezone": "browser",
+  "style": "dark"
+}
