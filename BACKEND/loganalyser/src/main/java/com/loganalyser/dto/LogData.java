@@ -11,7 +11,7 @@ public class LogData {
 		super();
 		// TODO Auto-generated constructor stub
 	}
-	public LogData(String timestamp, String logType, String message) {
+	public LogData(LocalDateTime timestamp, String logType, String message) {
 		super();
 		this.timestamp = timestamp;
 		this.logType = logType;
