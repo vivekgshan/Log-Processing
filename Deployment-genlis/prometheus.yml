@@ -12,6 +12,11 @@ scrape_configs:
     static_configs:
       - targets: ["cadvisor:8080"]
 
+  # Node Exporter (host metrics)
+  - job_name: "node-exporter"
+    static_configs:
+      - targets: ["node-exporter:9100"]
+  
   # loggenerator
   - job_name: "loggenerator"
     metrics_path: "/actuator/prometheus"
