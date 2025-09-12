@@ -130,7 +130,7 @@
       "type": "timeseries",
       "targets": [
         {
-          "expr": "histogram_quantile(0.95, sum(rate(http_server_requests_seconds_bucket{job=~\"loggenerator|loglistener\"}[5m])) by (le, job))",
+          "expr": "rate(http_server_requests_seconds_sum{job=~"loggenerator|loglistener"}[5m])/rate(http_server_requests_seconds_count{job=~"loggenerator|loglistener"}[5m])",
           "legendFormat": "{{job}}"
         }
       ],
