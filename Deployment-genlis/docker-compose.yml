@@ -19,6 +19,8 @@ services:
       context: ../BACKEND/loglistener
       dockerfile: Dockerfile
     image: loglistener:latest
+    environment:
+      - LOG_COLLECTOR_IP=${LOG_COLLECTOR_IP}
     container_name: loglistener
     ports:
       - "8785:8785"
