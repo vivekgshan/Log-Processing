@@ -1,6 +1,12 @@
 pipeline {
     agent any
 
+    parameters {
+        string(name: 'LOG_COLLECTOR_IP', defaultValue: '127.0.0.1', description: 'Log Collector IP Address')
+        choice(name: 'REMOVE_LOGGENERATOR_IMAGE', choices: ['no', 'yes'], description: 'Remove loggenerator image?')
+        choice(name: 'REMOVE_LOGLISTENER_IMAGE', choices: ['no', 'yes'], description: 'Remove loglistener image?')
+    }
+
     environment {
         PROJECT_DIR = "Log-Processing"
         BACKEND_DIR = "${WORKSPACE}/BACKEND"
@@ -14,14 +20,69 @@ pipeline {
             }
         }
 
+        stage('Show Current Docker State') {
+            steps {
+                script {
+                    echo "==== Current Docker Containers ===="
+                    sh 'docker ps -a || true'
+
+                    echo "==== Current Docker Images ===="
+                    sh 'docker images || true'
+                }
+            }
+        }
+
+        stage('Shutdown Docker Compose') {
+            steps {
+                dir("${DEPLOY_DIR}") {
+                    script {
+                        echo "Shutting down Docker Compose stack..."
+                        sh 'docker-compose down || true'
+
+                        echo "Cleaning dangling images and stopped containers..."
+                        sh 'docker image prune -a -f || true'
+                        sh 'docker container prune -a -f || true'
+                    }
+                }
+            }
+        }
+
+        stage('Remove loggenerator Image') {
+            when {
+                expression { params.REMOVE_LOGGENERATOR_IMAGE == 'yes' }
+            }
+            steps {
+                script {
+                    echo "Removing loggenerator image..."
+                    sh 'docker rmi -f loggenerator:latest || true'
+                }
+            }
+        }
+
+        stage('Remove loglistener Image') {
+            when {
+                expression { params.REMOVE_LOGLISTENER_IMAGE == 'yes' }
+            }
+            steps {
+                script {
+                    echo "Removing loglistener image..."
+                    sh 'docker rmi -f loglistener:latest || true'
+                }
+            }
+        }
+
         stage('Build loggenerator & loglistener') {
             steps {
                 script {
-                    echo "Building loggenerator image from ${BACKEND_DIR}/loggenerator"
-                    sh "docker build -t loggenerator:latest ${BACKEND_DIR}/loggenerator"
+                    echo "Building loggenerator image..."
+                    sh "docker build --no-cache -t loggenerator:latest ${BACKEND_DIR}/loggenerator"
 
-                    echo "Building loglistener image from ${BACKEND_DIR}/loglistener"
-                    sh "docker build -t loglistener:latest ${BACKEND_DIR}/loglistener"
+                    echo "Building loglistener image..."
+                    sh "docker build --no-cache -t loglistener:latest ${BACKEND_DIR}/loglistener"
+                    
+                    echo "Cleaning unused images..."
+                    sh 'docker image prune -af || true'
+
                 }
             }
         }
@@ -30,11 +91,10 @@ pipeline {
             steps {
                 dir("${DEPLOY_DIR}") {
                     script {
-                        echo "Shutting down any existing stack..."
-                        sh 'docker-compose -v down || true'
-
                         echo "Starting new stack with rebuilt images..."
-                        sh 'docker-compose up -d --build'
+                        withEnv(["LOG_COLLECTOR_IP=${params.LOG_COLLECTOR_IP}"]) {
+                            sh 'docker-compose up -d --build'
+                        }
                     }
                 }
             }
@@ -43,8 +103,11 @@ pipeline {
 
     post {
         always {
-            echo "Listing all containers after deployment..."
+            echo "==== Final Docker Containers ===="
             sh 'docker ps -a || true'
+
+            echo "==== Final Docker Images ===="
+            sh 'docker images || true'
         }
     }
 }
