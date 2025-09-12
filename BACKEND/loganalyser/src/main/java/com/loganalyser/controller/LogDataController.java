@@ -9,7 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import com.loganalyser.controller.dto.LogData;
+import com.loganalyser.dto.LogData;
 import com.loganalyser.model.LogEntity;
 import com.loganalyser.service.LogDataService;
 

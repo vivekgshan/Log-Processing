@@ -37,6 +37,6 @@ public class LogController {
 	 @PostMapping
 	 public String createLog(@RequestBody LogRequest logRequest) {
 		 dBLogAppender.saveMessage(logRequest);
-		 return "Log saved to DB!";
+		 return "Log saved to log file!";
 	 }
 }

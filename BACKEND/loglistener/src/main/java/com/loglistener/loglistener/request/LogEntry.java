@@ -1,22 +1,26 @@
 package com.loglistener.loglistener.request;
 
-public class LogEntry {
+import java.time.LocalDateTime;
 
-	private String timestamp;
+import com.fasterxml.jackson.annotation.JsonFormat;
+
+public class LogEntry {
+	@JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+	private LocalDateTime timestamp;
 	private String logType;
 	private String message;
 
-	public LogEntry(String timestamp, String logType, String message) {
+	public LogEntry(LocalDateTime timestamp, String logType, String message) {
 		this.timestamp = timestamp;
 		this.logType = logType;
 		this.message = message;
 	}
 
-	public String getTimestamp() {
+	public LocalDateTime getTimestamp() {
 		return timestamp;
 	}
 
-	public void setTimestamp(String timestamp) {
+	public void setTimestamp(LocalDateTime timestamp) {
 		this.timestamp = timestamp;
 	}
 
