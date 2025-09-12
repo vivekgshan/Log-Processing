@@ -1,0 +1,31 @@
+version: "3.9"
+
+services:
+  loggenerator:
+    image: loggenerator:latest
+    container_name: loggenerator
+    ports:
+      - "8780:8780"
+    volumes:
+      - shared-logs:/root/log     # loggenerator writes logs here
+    networks:
+      - lognet
+
+  loglistener:
+    image: loglistener:latest
+    container_name: loglistener
+    ports:
+      - "8785:8785"
+    depends_on:
+      - loggenerator
+    volumes:
+      - shared-logs:/root/log              # loglistener reads same logs here
+    networks:
+      - lognet
+
+volumes:
+  shared-logs:                          # declare named volume
+
+networks:
+  lognet:
+    driver: bridge

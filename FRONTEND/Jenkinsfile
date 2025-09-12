@@ -1,0 +1,76 @@
+pipeline {
+    agent any
+
+    environment {
+        DOCKER_REGISTRY = "mudam5"      // DockerHub username
+        IMAGE_NAME = "log-processing-ui"
+        HOST_PORT = "3000"
+        CONTAINER_PORT = "80"
+        CONTAINER_NAME = "log-processing-ui"
+    }
+
+    stages {
+        stage('Checkout') {
+            steps {
+                git branch: 'dev',
+                    url: 'https://github.com/vivekgshan/Log-Processing.git'
+            }
+        }
+
+        stage('Build Docker Image') {
+            steps {
+                script {
+                    // Get Git commit short hash for tagging
+                    COMMIT_ID = sh(script: "git rev-parse --short HEAD", returnStdout: true).trim()
+                    DOCKER_TAG = "${COMMIT_ID}"
+
+                    dir('FRONTEND') {
+                        sh """
+                            echo "Building Docker image..."
+                            docker build -t ${DOCKER_REGISTRY}/${IMAGE_NAME}:${DOCKER_TAG} \
+                                         -t ${DOCKER_REGISTRY}/${IMAGE_NAME}:latest .
+                        """
+                    }
+                }
+            }
+        }
+
+        stage('Push Docker Image') {
+            steps {
+                script {
+                    withCredentials([usernamePassword(credentialsId: 'docker', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
+                        sh 'echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin'
+                        sh "docker push ${DOCKER_REGISTRY}/${IMAGE_NAME}:${DOCKER_TAG}"
+                        sh "docker push ${DOCKER_REGISTRY}/${IMAGE_NAME}:latest"
+                    }
+                }
+            }
+        }
+
+        stage('Deploy to EC2') {
+            steps {
+                script {
+                    sh """
+                        echo "Stopping old container if running..."
+                        docker rm -f ${CONTAINER_NAME} || true
+
+                        echo "Pulling latest image..."
+                        docker pull ${DOCKER_REGISTRY}/${IMAGE_NAME}:latest
+
+                        echo "Starting new container..."
+                        docker run -d -p ${HOST_PORT}:${CONTAINER_PORT} --name ${CONTAINER_NAME} ${DOCKER_REGISTRY}/${IMAGE_NAME}:latest
+                    """
+                }
+            }
+        }
+    }
+
+    post {
+        success {
+            echo "✅ Deployment successful! UI is live at http://<EC2-Public-IP>:${HOST_PORT}"
+        }
+        failure {
+            echo "❌ Deployment failed. Check Jenkins logs."
+        }
+    }
+}

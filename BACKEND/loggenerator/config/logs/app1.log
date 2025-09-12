@@ -1,0 +1,8 @@
+2025-09-05 13:55:29 | ERROR | Payment declined due to insufficient funds
+2025-09-05 13:55:29 | INFO | Payment declined due to insufficient funds
+2025-09-05 13:55:29 | WARN | Cache refreshed successfully
+2025-09-05 13:55:29 | INFO | User logged in successfully
+2025-09-05 13:55:29 | ERROR | Unauthorized access attempt detected
+2025-09-05 13:55:29 | WARN | Payment declined due to insufficient funds
+2025-09-05 13:55:29 | WARN | Unauthorized access attempt detected
+2025-09-05 13:55:29 | INFO | Database connection timeout

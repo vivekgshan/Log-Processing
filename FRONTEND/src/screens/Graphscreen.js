@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+/* import React, { useState } from 'react';
 import LogLineChart from '../components/LineChart';
 import { timeSeriesData } from '../mock/logData';
+import "../index.css";
 
 const GraphScreen = () => {
   const [data, setData] = useState(timeSeriesData);
@@ -31,10 +32,8 @@ const GraphScreen = () => {
   };
 
   return (
-    <div>
-      <h4>📊 Log Monitoring Time Series</h4>
-
-      <div style={{ marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '10px' }}>
+    <div className="graph-container">
+      <div className="filters">
         <label>
           Start Date:
           <input type="date" value={startDate} onChange={e => setStartDate(e.target.value)} />
@@ -51,23 +50,76 @@ const GraphScreen = () => {
           End Time:
           <input type="time" value={endTime} onChange={e => setEndTime(e.target.value)} />
         </label>
-        <button
-          style={{
-            padding: '8px 12px',
-            backgroundColor: '#1890ff',
-            color: 'white',
-            border: 'none',
-            borderRadius: '4px',
-            cursor: 'pointer',
-            fontSize: '14px'
-          }}
-          onClick={handleApply}
-        >
+        <button className="apply-btn" onClick={handleApply}>
           Apply
         </button>
       </div>
 
-      <LogLineChart data={data} onRefresh={handleRefresh} />
+      <div className="chart-wrapper">
+        <LogLineChart data={data} onRefresh={handleRefresh} />
+      </div>
+    </div>
+  );
+};
+
+export default GraphScreen; */
+
+
+import React, { useState } from "react";
+import LogLineChart from "../components/LineChart";
+import "../index.css";
+
+const GraphScreen = ({ graphData }) => {
+  const [startDate, setStartDate] = useState("");
+  const [startTime, setStartTime] = useState("");
+  const [endDate, setEndDate] = useState("");
+  const [endTime, setEndTime] = useState("");
+  const [filtered, setFiltered] = useState(graphData);
+
+  const handleApply = () => {
+    if (!startDate || !startTime || !endDate || !endTime) {
+      alert("Please select all date and time fields.");
+      return;
+    }
+
+    const start = new Date(`${startDate}T${startTime}:00`);
+    const end = new Date(`${endDate}T${endTime}:00`);
+
+    const result = graphData.filter((entry) => {
+      const timestamp = new Date(entry.timestamp);
+      return timestamp >= start && timestamp <= end;
+    });
+
+    setFiltered(result);
+  };
+
+  return (
+    <div className="graph-container">
+      <div className="filters">
+        <label>
+          Start Date:
+          <input type="date" value={startDate} onChange={e => setStartDate(e.target.value)} />
+        </label>
+        <label>
+          Start Time:
+          <input type="time" value={startTime} onChange={e => setStartTime(e.target.value)} />
+        </label>
+        <label>
+          End Date:
+          <input type="date" value={endDate} onChange={e => setEndDate(e.target.value)} />
+        </label>
+        <label>
+          End Time:
+          <input type="time" value={endTime} onChange={e => setEndTime(e.target.value)} />
+        </label>
+        <button className="apply-btn" onClick={handleApply}>
+          Apply
+        </button>
+      </div>
+
+      <div className="chart-wrapper">
+        <LogLineChart data={filtered.length ? filtered : graphData} />
+      </div>
     </div>
   );
 };
