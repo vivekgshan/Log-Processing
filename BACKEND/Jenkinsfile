@@ -1,57 +1,119 @@
 pipeline {
     agent any
 
+    parameters {
+        string(name: 'BRANCH', defaultValue: 'dev-cloud-banu', description: 'Git branch to build')
+        string(name: 'DOCKERHUB_REPO', defaultValue: 'pansura/demo', description: 'DockerHub repo')
+
+        choice(name: 'CLEAN_IMAGES', choices: ['no', 'yes'], description: 'Prune old images before build?')
+        choice(name: 'CLEAN_CONTAINERS', choices: ['no', 'yes'], description: 'Prune old containers before build?')
+
+        // Service toggles
+        choice(name: 'BUILD_LOGCOLLECTOR', choices: ['yes', 'no'], description: 'Build & push logcollector?')
+        choice(name: 'BUILD_LOGERRORPERSISTOR', choices: ['yes', 'no'], description: 'Build & push logerrorpersistor?')
+        choice(name: 'BUILD_LOGDEBUGPERSISTOR', choices: ['yes', 'no'], description: 'Build & push logdebugpersistor?')
+        choice(name: 'BUILD_LOGWARNPERSISTOR', choices: ['yes', 'no'], description: 'Build & push logwarnpersistor?')
+        choice(name: 'BUILD_LOGINFOPERSISTOR', choices: ['yes', 'no'], description: 'Build & push loginfopersistor?')
+        choice(name: 'BUILD_LOGANALYSER', choices: ['yes', 'no'], description: 'Build & push loganalyser?')
+    }
+
     environment {
         BACKEND_DIR = "BACKEND"
-        DOCKERHUB_REPO = "pansura/demo"
     }
 
     stages {
         stage('Checkout') {
             steps {
-                git branch: 'dev-cloud', url: 'https://github.com/vivekgshan/Log-Processing.git'
+                git branch: "${params.BRANCH}", url: 'https://github.com/vivekgshan/Log-Processing.git'
             }
         }
 
-        stage('Build with Docker Compose') {
+        stage('Clean Up Old Stack') {
             steps {
                 dir("${BACKEND_DIR}") {
                     script {
-                        // Rebuild containers
-                        sh 'docker compose -f docker-compose.yaml down || true'
-                        sh 'docker compose -f docker-compose.yaml build'
-                    }
-                }
-            }
-        }
+                         echo "Stopping old stack..."
+                         sh 'docker compose -f docker-compose.yaml down || true'
 
-        stage('Push Images to DockerHub') {
-            steps {
-                dir("${BACKEND_DIR}") {
-                    script {
-                        withCredentials([usernamePassword(credentialsId: 'dockerhub',
-                                                          usernameVariable: 'DOCKERHUB_USER',
-                                                          passwordVariable: 'DOCKERHUB_PASS')]) {
-                            sh '''
-                                echo "$DOCKERHUB_PASS" | docker login -u "$DOCKERHUB_USER" --password-stdin
+                        if (params.CLEAN_IMAGES == 'yes') {
+                            sh 'docker image prune -af || true'
+                        }
 
-                                for service in logcollector logerrorpersistor logdebugpersistor logwarnpersistor loginfopersistor loganalyser; do
-                                    echo "📦 Tagging and pushing $service..."
-                                    docker tag backend-$service:latest ${DOCKERHUB_REPO}:$service
-                                    docker push ${DOCKERHUB_REPO}:$service
-                                done
-                            '''
+                        if (params.CLEAN_CONTAINERS == 'yes') {
+                            sh 'docker container prune -f || true'
                         }
                     }
                 }
             }
         }
 
-        stage('Deploy with Docker Compose') {
+   stage('Prepare Configs') {
+    steps {
+        dir("${BACKEND_DIR}") {
+            script {
+                echo "🔧 Ensuring prometheus.yml is valid..."
+                sh '''
+                    if [ -d prometheus.yml ]; then
+                        echo "⚠️ Found prometheus.yml as a directory, removing..."
+                        rm -rf prometheus.yml
+                    fi
+
+                    if [ ! -f prometheus.yml ]; then
+                        echo "❌ prometheus.yml not found in BACKEND. Please add it."
+                        exit 1
+                    fi
+
+                    echo "==== prometheus.yml status ===="
+                    ls -l prometheus.yml
+                    file prometheus.yml || true
+                '''
+            }
+        }
+    }
+}
+
+        stage('Build & Push Selected Services') {
             steps {
                 dir("${BACKEND_DIR}") {
                     script {
-                        // Run containers from compose
+                        withCredentials([usernamePassword(credentialsId: 'dockerhub',
+                                                          usernameVariable: 'DOCKERHUB_USER',
+                                                          passwordVariable: 'DOCKERHUB_PASS')]) {
+                            sh 'echo "$DOCKERHUB_PASS" | docker login -u "$DOCKERHUB_USER" --password-stdin'
+
+                            def services = [
+                                [name: 'logcollector',      toggle: params.BUILD_LOGCOLLECTOR],
+                                [name: 'logerrorpersistor', toggle: params.BUILD_LOGERRORPERSISTOR],
+                                [name: 'logdebugpersistor', toggle: params.BUILD_LOGDEBUGPERSISTOR],
+                                [name: 'logwarnpersistor',  toggle: params.BUILD_LOGWARNPERSISTOR],
+                                [name: 'loginfopersistor',  toggle: params.BUILD_LOGINFOPERSISTOR],
+                                [name: 'loganalyser',       toggle: params.BUILD_LOGANALYSER]
+                            ]
+
+                            for (svc in services) {
+                                if (svc.toggle == 'yes') {
+                                    echo "🚀 Building ${svc.name}..."
+                                    sh "docker compose -f docker-compose.yaml build ${svc.name}"
+                                    echo "📦 Tagging and pushing ${svc.name}..."
+                                    sh """
+                                        docker tag backend-${svc.name}:latest ${params.DOCKERHUB_REPO}:${svc.name}
+                                        docker push ${params.DOCKERHUB_REPO}:${svc.name}
+                                    """
+                                } else {
+                                    echo "⏩ Skipping ${svc.name}"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        stage('Deploy New Stack') {
+            steps {
+                dir("${BACKEND_DIR}") {
+                    script {
+                        echo "Starting new stack..."
                         sh 'docker compose -f docker-compose.yaml up -d'
                     }
                 }
@@ -61,7 +123,9 @@ pipeline {
 
     post {
         always {
+            echo "==== Final Docker State ===="
             sh 'docker ps -a || true'
+            sh 'docker images || true'
         }
     }
 }
