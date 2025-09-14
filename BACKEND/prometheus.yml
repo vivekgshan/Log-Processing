@@ -15,7 +15,6 @@ scrape_configs:
 
   # Scrape Spring Boot apps (Actuator Prometheus endpoint)
   - job_name: 'spring-apps'
-    metrics_path: '/actuator/prometheus'
     static_configs:
       - targets:
           - 'logcollector:8789'
