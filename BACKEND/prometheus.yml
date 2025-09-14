@@ -5,13 +5,11 @@ global:
 scrape_configs:
   # Scrape Prometheus itself
   - job_name: 'prometheus'
-    metrics_path: '/actuator/prometheus'
     static_configs:
       - targets: ['prometheus:9090']
 
   # Scrape cAdvisor
   - job_name: 'cadvisor'
-    metrics_path: '/actuator/prometheus'
     static_configs:
       - targets: ['cadvisor:8080']
 
