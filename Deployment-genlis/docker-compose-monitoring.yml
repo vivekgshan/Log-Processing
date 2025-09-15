@@ -79,7 +79,7 @@ services:
 
 volumes:
   grafana-storage:
-  shared-logs:          # 👈 declare here
+  deployment-genlis_shared-logs:           # 👈 exact name from `docker volume ls`
     external: true      # 👈 tells Docker to reuse existing shared-logs 
 
 networks:
