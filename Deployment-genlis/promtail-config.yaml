@@ -9,6 +9,7 @@ clients:
   - url: http://loki:3100/loki/api/v1/push
 
 scrape_configs:
+  # System logs
   - job_name: system-logs
     static_configs:
       - targets:
@@ -25,7 +26,7 @@ scrape_configs:
         labels:
           job: loglistener
           __path__: /root/log/*.log
-     pipeline_stages:
+    pipeline_stages:       # 👈 moved OUT of static_configs
       - regex:
           expression: '^(?P<timestamp>[^|]+) \| (?P<level>INFO|WARN|ERROR) \| (?P<message>.*)$'
       - labels:
@@ -33,7 +34,7 @@ scrape_configs:
           message:
       - timestamp:
           source: timestamp
-          format: "2006-01-02 15:04:05"     
+          format: "2006-01-02 15:04:05"
 
   # Loggenerator logs
   - job_name: loggenerator
@@ -42,7 +43,7 @@ scrape_configs:
           - localhost
         labels:
           job: loggenerator
-          __path__: /root/log/*.log        
+          __path__: /root/log/*.log
     pipeline_stages:
       - regex:
           expression: '^(?P<timestamp>[^|]+) \| (?P<level>INFO|WARN|ERROR) \| (?P<message>.*)$'
@@ -52,4 +53,3 @@ scrape_configs:
       - timestamp:
           source: timestamp
           format: "2006-01-02 15:04:05"
-          
