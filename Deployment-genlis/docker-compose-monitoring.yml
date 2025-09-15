@@ -60,6 +60,7 @@ services:
     volumes:
       - ./loki-config.yaml:/etc/loki/local-config.yaml
       - ./loki-data:/loki          # 👈 persistent storage for indexes & WAL
+      - ./loki-wal:/wal              # 👈 add WAL mount
     networks:
       - monitor-net
 
