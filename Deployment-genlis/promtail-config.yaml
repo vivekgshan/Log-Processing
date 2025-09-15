@@ -30,6 +30,7 @@ scrape_configs:
           expression: '^(?P<timestamp>[^|]+) \| (?P<level>INFO|WARN|ERROR) \| (?P<message>.*)$'
       - labels:
           level:
+          message:
       - timestamp:
           source: timestamp
           format: "2006-01-02 15:04:05"     
@@ -47,6 +48,7 @@ scrape_configs:
           expression: '^(?P<timestamp>[^|]+) \| (?P<level>INFO|WARN|ERROR) \| (?P<message>.*)$'
       - labels:
           level:
+          message:
       - timestamp:
           source: timestamp
           format: "2006-01-02 15:04:05"
