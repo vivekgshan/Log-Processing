@@ -17,10 +17,20 @@ scrape_configs:
           job: system
           __path__: /var/log/*.log
 
-  - job_name: logprocessor
+  # Loglistener logs
+  - job_name: loglistener
     static_configs:
       - targets:
           - localhost
         labels:
           job: loglistener
-          __path__: /root/log/*.log   # adjust this to your log file path inside EC2
+          __path__: /root/log/*.log
+
+  # Loggenerator logs
+  - job_name: loggenerator
+    static_configs:
+      - targets:
+          - localhost
+        labels:
+          job: loggenerator
+          __path__: /root/log/*.log
