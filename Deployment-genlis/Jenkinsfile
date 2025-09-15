@@ -16,7 +16,7 @@ pipeline {
     stages {
         stage('Checkout') {
             steps {
-                git branch: 'dev-cloud', url: 'https://github.com/vivekgshan/Log-Processing.git'
+                git branch: 'dev-cloud-ram', url: 'https://github.com/vivekgshan/Log-Processing.git'
             }
         }
 
