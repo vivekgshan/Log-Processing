@@ -142,7 +142,7 @@ services:
       - '--path.sysfs=/host/sys'
       - '--path.rootfs=/rootfs'
     networks:
-      - log-net   
+      - lognet   
 
   grafana:
     image: grafana/grafana:latest
