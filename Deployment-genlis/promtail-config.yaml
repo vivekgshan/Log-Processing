@@ -34,3 +34,13 @@ scrape_configs:
         labels:
           job: loggenerator
           __path__: /root/log/*.log
+          
+  pipeline_stages:
+      - regex:
+          expression: '^(?P<timestamp>[^|]+) \| (?P<level>INFO|WARN|ERROR) \| (?P<message>.*)$'
+      - labels:
+          level:
+      - timestamp:
+          source: timestamp
+          format: "2006-01-02 15:04:05"
+          
