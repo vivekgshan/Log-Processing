@@ -69,7 +69,6 @@ services:
     container_name: promtail
     volumes:
       - /var/log:/var/log                # host logs
-      - /root/log:/root/log              # 👈 mount the same logs dir
       - shared-logs:/root/log   # 👈 mount the same volume as loggenerator/loglistener
       - ./promtail-config.yaml:/etc/promtail/config.yml
     command: -config.file=/etc/promtail/config.yml
