@@ -80,7 +80,9 @@ services:
 
 volumes:
   grafana-storage:
+  shared-logs:          # 👈 declare here
+    external: true      # 👈 tells Docker to reuse existing shared-logs 
 
 networks:
   monitor-net:
-    driver: bridge
+    driver: bridge   
