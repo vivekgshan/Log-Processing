@@ -4,17 +4,18 @@ pipeline {
     parameters {
         string(name: 'BRANCH', defaultValue: 'dev-cloud-banu', description: 'Git branch to build')
         string(name: 'DOCKERHUB_REPO', defaultValue: 'pansura/demo', description: 'DockerHub repo')
-
         choice(name: 'CLEAN_IMAGES', choices: ['no', 'yes'], description: 'Prune old images before build?')
         choice(name: 'CLEAN_CONTAINERS', choices: ['no', 'yes'], description: 'Prune old containers before build?')
 
-        // Service toggles
-        choice(name: 'BUILD_LOGCOLLECTOR', choices: ['yes', 'no'], description: 'Build & push logcollector?')
-        choice(name: 'BUILD_LOGERRORPERSISTOR', choices: ['yes', 'no'], description: 'Build & push logerrorpersistor?')
-        choice(name: 'BUILD_LOGDEBUGPERSISTOR', choices: ['yes', 'no'], description: 'Build & push logdebugpersistor?')
-        choice(name: 'BUILD_LOGWARNPERSISTOR', choices: ['yes', 'no'], description: 'Build & push logwarnpersistor?')
-        choice(name: 'BUILD_LOGINFOPERSISTOR', choices: ['yes', 'no'], description: 'Build & push loginfopersistor?')
-        choice(name: 'BUILD_LOGANALYSER', choices: ['yes', 'no'], description: 'Build & push loganalyser?')
+        // ✅ Checkbox parameter (needs Extended Choice Parameter plugin)
+        extendedChoice(
+            name: 'SERVICES_TO_BUILD',
+            type: 'PT_CHECKBOX',
+            multiSelectDelimiter: ',',
+            value: 'logcollector,logerrorpersistor,logdebugpersistor,logwarnpersistor,loginfopersistor,loganalyser',
+            description: 'Select one or more services to build & push',
+            defaultValue: 'logcollector,loganalyser'
+        )
     }
 
     environment {
@@ -32,13 +33,10 @@ pipeline {
             steps {
                 dir("${BACKEND_DIR}") {
                     script {
-                         echo "Stopping old stack..."
-                         sh 'docker compose -f docker-compose.yaml down || true'
-
+                        sh 'docker compose -f docker-compose.yaml down || true'
                         if (params.CLEAN_IMAGES == 'yes') {
                             sh 'docker image prune -af || true'
                         }
-
                         if (params.CLEAN_CONTAINERS == 'yes') {
                             sh 'docker container prune -f || true'
                         }
@@ -47,30 +45,23 @@ pipeline {
             }
         }
 
-   stage('Prepare Configs') {
-    steps {
-        dir("${BACKEND_DIR}") {
-            script {
-                echo "🔧 Ensuring prometheus.yml is valid..."
-                sh '''
-                    if [ -d prometheus.yml ]; then
-                        echo "⚠️ Found prometheus.yml as a directory, removing..."
-                        rm -rf prometheus.yml
-                    fi
-
-                    if [ ! -f prometheus.yml ]; then
-                        echo "❌ prometheus.yml not found in BACKEND. Please add it."
-                        exit 1
-                    fi
-
-                    echo "==== prometheus.yml status ===="
-                    ls -l prometheus.yml
-                    file prometheus.yml || true
-                '''
+        stage('Prepare Configs') {
+            steps {
+                dir("${BACKEND_DIR}") {
+                    script {
+                        sh '''
+                            if [ -d prometheus.yml ]; then rm -rf prometheus.yml; fi
+                            if [ ! -f prometheus.yml ]; then
+                                echo "❌ prometheus.yml not found"
+                                exit 1
+                            fi
+                            ls -l prometheus.yml
+                            file prometheus.yml || true
+                        '''
+                    }
+                }
             }
         }
-    }
-}
 
         stage('Build & Push Selected Services') {
             steps {
@@ -81,27 +72,17 @@ pipeline {
                                                           passwordVariable: 'DOCKERHUB_PASS')]) {
                             sh 'echo "$DOCKERHUB_PASS" | docker login -u "$DOCKERHUB_USER" --password-stdin'
 
-                            def services = [
-                                [name: 'logcollector',      toggle: params.BUILD_LOGCOLLECTOR],
-                                [name: 'logerrorpersistor', toggle: params.BUILD_LOGERRORPERSISTOR],
-                                [name: 'logdebugpersistor', toggle: params.BUILD_LOGDEBUGPERSISTOR],
-                                [name: 'logwarnpersistor',  toggle: params.BUILD_LOGWARNPERSISTOR],
-                                [name: 'loginfopersistor',  toggle: params.BUILD_LOGINFOPERSISTOR],
-                                [name: 'loganalyser',       toggle: params.BUILD_LOGANALYSER]
-                            ]
+                            def selected = params.SERVICES_TO_BUILD.tokenize(',')
 
-                            for (svc in services) {
-                                if (svc.toggle == 'yes') {
-                                    echo "🚀 Building ${svc.name}..."
-                                    sh "docker compose -f docker-compose.yaml build ${svc.name}"
-                                    echo "📦 Tagging and pushing ${svc.name}..."
-                                    sh """
-                                        docker tag backend-${svc.name}:latest ${params.DOCKERHUB_REPO}:${svc.name}
-                                        docker push ${params.DOCKERHUB_REPO}:${svc.name}
-                                    """
-                                } else {
-                                    echo "⏩ Skipping ${svc.name}"
-                                }
+                            for (svc in selected) {
+                                echo "🚀 Building ${svc}..."
+                                sh "docker compose -f docker-compose.yaml build ${svc}"
+
+                                echo "📦 Tagging and pushing ${svc}..."
+                                sh """
+                                    docker tag backend-${svc}:latest ${params.DOCKERHUB_REPO}:${svc}
+                                    docker push ${params.DOCKERHUB_REPO}:${svc}
+                                """
                             }
                         }
                     }
@@ -112,10 +93,7 @@ pipeline {
         stage('Deploy New Stack') {
             steps {
                 dir("${BACKEND_DIR}") {
-                    script {
-                        echo "Starting new stack..."
-                        sh 'docker compose -f docker-compose.yaml up -d'
-                    }
+                    sh 'docker compose -f docker-compose.yaml up -d'
                 }
             }
         }
@@ -123,7 +101,6 @@ pipeline {
 
     post {
         always {
-            echo "==== Final Docker State ===="
             sh 'docker ps -a || true'
             sh 'docker images || true'
         }
