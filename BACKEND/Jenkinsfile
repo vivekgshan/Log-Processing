@@ -7,14 +7,14 @@ pipeline {
         choice(name: 'CLEAN_IMAGES', choices: ['no', 'yes'], description: 'Prune old images before build?')
         choice(name: 'CLEAN_CONTAINERS', choices: ['no', 'yes'], description: 'Prune old containers before build?')
 
-        // ✅ Checkbox parameter (needs Extended Choice Parameter plugin)
+        // ✅ Checkbox parameter with "all" option
         extendedChoice(
             name: 'SERVICES_TO_BUILD',
             type: 'PT_CHECKBOX',
             multiSelectDelimiter: ',',
-            value: 'logcollector,logerrorpersistor,logdebugpersistor,logwarnpersistor,loginfopersistor,loganalyser',
-            description: 'Select one or more services to build & push',
-            defaultValue: 'logcollector,loganalyser'
+            value: 'all,logcollector,logerrorpersistor,logdebugpersistor,logwarnpersistor,loginfopersistor,loganalyser',
+            description: 'Select "all" OR one/more specific services to build & push',
+            defaultValue: 'all'
         )
     }
 
@@ -73,6 +73,11 @@ pipeline {
                             sh 'echo "$DOCKERHUB_PASS" | docker login -u "$DOCKERHUB_USER" --password-stdin'
 
                             def selected = params.SERVICES_TO_BUILD.tokenize(',')
+
+                            // ✅ Handle "all" logic
+                            if (selected.contains("all")) {
+                                selected = ['logcollector','logerrorpersistor','logdebugpersistor','logwarnpersistor','loginfopersistor','loganalyser']
+                            }
 
                             for (svc in selected) {
                                 echo "🚀 Building ${svc}..."
