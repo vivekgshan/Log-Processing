@@ -59,8 +59,8 @@ services:
     command: -config.file=/etc/loki/local-config.yaml
     volumes:
       - ./loki-config.yaml:/etc/loki/local-config.yaml
-      - ./loki-data:/loki          # 👈 persistent storage for indexes & WAL
-      - ./loki-wal:/wal              # 👈 add WAL mount
+      - loki-data:/loki        # 👉 Use named volume instead of ./loki-data
+      - loki-wal:/wal          # 👉 WAL storage as named volume
     networks:
       - monitor-net
 
@@ -68,8 +68,8 @@ services:
     image: grafana/promtail:2.9.2
     container_name: promtail
     volumes:
-      - /var/log:/var/log                # host logs
-      - deployment-genlis_shared-logs:/root/log   # 👈 correct shared volume
+      - /var/log:/var/log     # host logs
+      - deployment-genlis_shared-logs:/root/log      # 👈 correct shared volume
       - ./promtail-config.yaml:/etc/promtail/config.yml
     command: -config.file=/etc/promtail/config.yml
     networks:
@@ -79,9 +79,11 @@ services:
 
 volumes:
   grafana-storage:
-  deployment-genlis_shared-logs:           # 👈 exact name from `docker volume ls`
-    external: true      # 👈 tells Docker to reuse existing shared-logs 
+  loki-data:         # 👉 Named volume (no manual chown required)
+  loki-wal:          # 👉 Named volume (no manual chown required)
+  deployment-genlis_shared-logs:
+    external: true
 
 networks:
   monitor-net:
-    driver: bridge   
+    driver: bridge
