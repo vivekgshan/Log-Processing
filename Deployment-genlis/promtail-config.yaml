@@ -1,0 +1,55 @@
+server:
+  http_listen_port: 9080
+  grpc_listen_port: 0
+
+positions:
+  filename: /tmp/positions.yaml
+
+clients:
+  - url: http://loki:3100/loki/api/v1/push
+
+scrape_configs:
+  # System logs
+  - job_name: system-logs
+    static_configs:
+      - targets:
+          - localhost
+        labels:
+          job: system
+          __path__: /var/log/*.log
+
+  # Loglistener logs
+  - job_name: loglistener
+    static_configs:
+      - targets:
+          - localhost
+        labels:
+          job: loglistener
+          __path__: /root/log/*.log
+    pipeline_stages:       # 👈 moved OUT of static_configs
+      - regex:
+          expression: '^(?P<timestamp>[^|]+) \| (?P<level>INFO|WARN|ERROR) \| (?P<message>.*)$'
+      - labels:
+          level:
+          message:
+      - timestamp:
+          source: timestamp
+          format: "2006-01-02 15:04:05"
+
+  # Loggenerator logs
+  - job_name: loggenerator
+    static_configs:
+      - targets:
+          - localhost
+        labels:
+          job: loggenerator
+          __path__: /root/log/*.log
+    pipeline_stages:
+      - regex:
+          expression: '^(?P<timestamp>[^|]+) \| (?P<level>INFO|WARN|ERROR) \| (?P<message>.*)$'
+      - labels:
+          level:
+          message:
+      - timestamp:
+          source: timestamp
+          format: "2006-01-02 15:04:05"

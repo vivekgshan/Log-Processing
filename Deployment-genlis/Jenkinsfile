@@ -16,7 +16,58 @@ pipeline {
     stages {
         stage('Checkout') {
             steps {
-                git branch: 'dev-cloud', url: 'https://github.com/vivekgshan/Log-Processing.git'
+                git branch: 'dev-cloud-ram', url: 'https://github.com/vivekgshan/Log-Processing.git'
+            }
+        }
+
+        stage('Show Current Docker State') {
+            steps {
+                script {
+                    echo "==== Current Docker Containers ===="
+                    sh 'docker ps -a || true'
+
+                    echo "==== Current Docker Images ===="
+                    sh 'docker images || true'
+                }
+            }
+        }
+
+        stage('Shutdown Docker Compose') {
+            steps {
+                dir("${DEPLOY_DIR}") {
+                    script {
+                        echo "Shutting down Docker Compose stack..."
+                        sh 'docker-compose down || true'
+
+                        echo "Cleaning dangling images and stopped containers..."
+                        sh 'docker image prune -a -f || true'
+                        sh 'docker container prune -a -f || true'
+                    }
+                }
+            }
+        }
+
+        stage('Remove loggenerator Image') {
+            when {
+                expression { params.REMOVE_LOGGENERATOR_IMAGE == 'yes' }
+            }
+            steps {
+                script {
+                    echo "Removing loggenerator image..."
+                    sh 'docker rmi -f loggenerator:latest || true'
+                }
+            }
+        }
+
+        stage('Remove loglistener Image') {
+            when {
+                expression { params.REMOVE_LOGLISTENER_IMAGE == 'yes' }
+            }
+            steps {
+                script {
+                    echo "Removing loglistener image..."
+                    sh 'docker rmi -f loglistener:latest || true'
+                }
             }
         }
 
