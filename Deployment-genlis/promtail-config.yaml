@@ -46,7 +46,7 @@ scrape_configs:
           __path__: /root/log/*.log
     pipeline_stages:
       - regex:
-          expression: '^(?P<timestamp>[^|]+) \| (?P<level>INFO|WARN|ERROR) \| (?P<message>.*)$'
+          expression: '^(?P<timestamp>[^|]+) \| (?P<level>INFO|WARN|ERROR|DEBUG) \| (?P<message>.*)$'
       - labels:
           level:
           message:
